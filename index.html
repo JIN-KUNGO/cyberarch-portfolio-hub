@@ -1,69 +1,509 @@
-html
-        <!-- Filter Pill Navigation Row -->
-        <div class="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 text-xs">
-            <button onclick="filterMedia('all')" class="media-filter-btn px-4 py-2 rounded-xl bg-cyber-cyan/10 border border-cyber-cyan text-cyber-cyan font-bold tracking-wider uppercase whitespace-nowrap">
-                All Windows
-            </button>
-            <button onclick="filterMedia('image')" class="media-filter-btn px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-gray-400 hover:text-white uppercase whitespace-nowrap">
-                Images
-            </button>
-            <button onclick="filterMedia('video')" class="media-filter-btn px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-gray-400 hover:text-white uppercase whitespace-nowrap">
-                Videos
-            </button>
-            <button onclick="filterMedia('albums')" class="media-filter-btn px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-gray-400 hover:text-white uppercase whitespace-nowrap">
-                Albums
-            </button>
-        </div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CYBERARCH — Master Unified Portfolio System</title>
+    <style>
+        :root {
+            --bg-dark: #070d11;
+            --panel-bg: #0c151d;
+            --border-color: #172d3a;
+            --accent-cyan: #00ffcc;
+            --accent-gold: #ffcc00;
+            --text-main: #e0f2fe;
+            --text-muted: #94a3b8;
+            --danger: #f43f5e;
+            --font-mono: 'Courier New', Courier, monospace;
+        }
 
-        <!-- Dynamic Target Area for Rendered Windows -->
-        <div id="windows-feed-container" class="space-y-8">
-            <!-- Dynamically generated projects render here -->
-            <div class="glass-panel rounded-2xl p-6 flex flex-col items-center justify-center text-center py-12 border border-dashed border-white/10">
-                <i class="fa-solid fa-folder-open text-4xl text-gray-600 mb-3 animate-pulse"></i>
-                <p class="text-gray-400 font-medium">No active system windows discovered.</p>
-                <p class="text-xs text-cyan-400/60 mt-1">Switch to the Studio tab to initiate your design matrix.</p>
-            </div>
-        </div>
-    </section>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
+        body { background-color: var(--bg-dark); color: var(--text-main); min-height: 100vh; padding-bottom: 4rem; }
 
-    <!-- ================= PAGE 2: AI INSIGHTS TAB INTERFACE ================= -->
-    <section id="tab-learning" class="hidden space-y-6">
-        <div class="glass-panel rounded-2xl p-5 border-l-2 border-cyber-blue">
-            <h3 class="font-orbitron font-bold text-sm tracking-wider text-white mb-2 flex items-center gap-2">
-                <i class="fa-solid fa-brain text-cyber-blue"></i> GLOBAL STORAGE METRICS
-            </h3>
-            <p class="text-sm text-gray-300 leading-relaxed mb-4">
-                This system runs a terminal localized matrix. Uploaded elements map seamlessly using a binary hardware abstraction layer inside your client browser.
-            </p>
-            <div class="grid grid-cols-2 gap-3 text-center">
-                <div class="bg-cyber-dark/60 border border-white/5 p-3 rounded-xl">
-                    <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Local Storage State</p>
-                    <p id="local-db-weight" class="text-lg font-orbitron font-black text-cyber-cyan mt-1">Active</p>
+        header {
+            background: var(--panel-bg);
+            border-bottom: 2px solid var(--border-color);
+            padding: 1.5rem;
+            text-align: center;
+            position: relative;
+        }
+
+        header h1 { color: var(--accent-cyan); font-size: 1.8rem; letter-spacing: 2px; }
+        header p { color: var(--text-muted); font-size: 0.9rem; margin-top: 0.3rem; }
+
+        .banner {
+            background: rgba(0, 255, 204, 0.05);
+            border: 1px solid var(--accent-cyan);
+            color: var(--accent-cyan);
+            padding: 0.75rem 1rem;
+            font-size: 0.85rem;
+            text-align: center;
+            margin: 1rem auto;
+            max-width: 900px;
+            border-radius: 6px;
+        }
+
+        nav {
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            background: var(--panel-bg);
+            padding: 0.75rem;
+            border-bottom: 1px solid var(--border-color);
+            flex-wrap: wrap;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        nav button {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-muted);
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+
+        nav button.active, nav button:hover {
+            background: var(--accent-cyan);
+            color: var(--bg-dark);
+            border-color: var(--accent-cyan);
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 1.5rem auto;
+            padding: 0 1rem;
+        }
+
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        .card {
+            background: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .card h2 { color: var(--accent-gold); margin-bottom: 1rem; font-size: 1.3rem; }
+        
+        .form-group { margin-bottom: 1rem; }
+        label { display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.4rem; }
+        input, select, textarea {
+            width: 100%;
+            background: var(--bg-dark);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 0.6rem;
+            border-radius: 4px;
+            font-size: 0.95rem;
+        }
+        textarea { resize: vertical; min-height: 80px; }
+
+        .btn {
+            background: var(--accent-cyan);
+            color: var(--bg-dark);
+            border: none;
+            padding: 0.6rem 1.2rem;
+            font-weight: bold;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+        .btn:hover { opacity: 0.85; }
+        .btn-danger { background: var(--danger); color: white; }
+        .btn-outline { background: transparent; border: 1px solid var(--border-color); color: var(--text-main); }
+
+        .grid-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .item-card {
+            background: var(--bg-dark);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 1rem;
+            position: relative;
+        }
+
+        .item-card h3 { color: var(--accent-cyan); font-size: 1.1rem; margin-bottom: 0.4rem; }
+        .item-card p { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 0.8rem; }
+        
+        .badge {
+            display: inline-block;
+            background: rgba(255, 204, 0, 0.1);
+            color: var(--accent-gold);
+            padding: 0.2rem 0.5rem;
+            font-size: 0.75rem;
+            border-radius: 4px;
+            border: 1px solid rgba(255, 204, 0, 0.2);
+        }
+
+        .chat-box {
+            background: var(--bg-dark);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            height: 250px;
+            overflow-y: auto;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+        }
+        .chat-msg { margin-bottom: 0.5rem; }
+        .chat-msg.simone { color: var(--accent-cyan); }
+        .chat-msg.user { color: var(--accent-gold); }
+
+        .flex-row { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; }
+        .space-between { justify-content: space-between; }
+        .mt-2 { margin-top: 1rem; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>CYBERARCH MASTER PORTFOLIO SYSTEM</h1>
+        <p>Unified Command Center (Sets A, B & C Merged Engine)</p>
+    </header>
+
+    <div class="banner">
+        ⚠️ <strong>Local IndexedDB Mode:</strong> Data is saved locally to your browser instance. Connect a backend like Supabase for public cross-device publishing[span_0](start_span)[span_0](end_span)[span_1](start_span)[span_1](end_span).
+    </div>
+
+    <nav>
+        <button class="tab-btn active" onclick="switchTab('windows')">🪟 Windows & Albums</button>
+        <button class="tab-btn" onclick="switchTab('achievements')">🏆 Achievements (Set A)</button>
+        <button class="tab-btn" onclick="switchTab('studio')">⚡ Studio Editor</button>
+        <button class="tab-btn" onclick="switchTab('simone')">🤖 SIMONE AI & Tasks</button>
+        <button class="tab-btn" onclick="switchTab('insights')">📊 Insights & Backup</button>
+    </nav>
+
+    <div class="container">
+
+        <!-- TAB 1: WINDOWS & ALBUMS (Set B & C) -->
+        <div id="tab-windows" class="tab-content active">
+            <div class="card space-between flex-row">
+                <div>
+                    <h2>Curated Project Windows</h2>
+                    <p>Organize up to 50 items per window across architectural albums[span_2](start_span)[span_2](end_span)[span_3](start_span)[span_3](end_span).</p>
                 </div>
-                <div class="bg-cyber-dark/60 border border-white/5 p-3 rounded-xl">
-                    <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Total System Leads</p>
-                    <p id="local-db-count" class="text-lg font-orbitron font-black text-white mt-1">0 Items</p>
+                <button class="btn" onclick="switchTab('studio')">+ Create New Window</button>
+            </div>
+            <div class="form-group">
+                <input type="text" id="windowSearch" placeholder="Search project windows, tags, or albums..." oninput="renderWindows()">
+            </div>
+            <div id="windowsContainer" class="grid-list">
+                <!-- Dynamically populated -->
+            </div>
+        </div>
+
+        <!-- TAB 2: ACHIEVEMENTS (Set A) -->
+        <div id="tab-achievements" class="tab-content">
+            <div class="card space-between flex-row">
+                <div>
+                    <h2>Milestones & Career Achievements</h2>
+                    <p>Manage professional records, competition awards, and credentials.</p>
+                </div>
+                <button class="btn" onclick="openAddAchievementModal()">+ Add Milestone</button>
+            </div>
+            <div id="achievementsContainer" class="grid-list">
+                <!-- Dynamically populated -->
+            </div>
+        </div>
+
+        <!-- TAB 3: STUDIO EDITOR (Set B & C Form) -->
+        <div id="tab-studio" class="tab-content">
+            <div class="card">
+                <h2 id="formTitle">Create or Update Portfolio Window</h2>
+                <form id="portfolioForm" onsubmit="saveWindow(event)">
+                    <input type="hidden" id="editWindowId">
+                    <div class="form-group">
+                        <label>Window Title *</label>
+                        <input type="text" id="wTitle" required placeholder="e.g. Wholistic Hospitel Concept">
+                    </div>
+                    <div class="form-group">
+                        <label>Category / Album</label>
+                        <select id="wCategory">
+                            <option value="Architecture">Architecture</option>
+                            <option value="Healthcare Architecture">Healthcare Architecture</option>
+                            <option value="Awards & Publications">Awards & Publications</option>
+                            <option value="Cinematic 3D Renderings">Cinematic 3D Renderings</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Description</label>
+                        <textarea id="wDesc" placeholder="Describe the project specs, engineering scale, or design goals..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Tags (Comma-separated)</label>
+                        <input type="text" id="wTags" placeholder="3D, parametric, hospital, sustainable">
+                    </div>
+                    <div class="form-group">
+                        <label>Add Media Files (Max 50 items per window)[span_4](start_span)[span_4](end_span)[span_5](start_span)[span_5](end_span)</label>
+                        <input type="file" id="wFiles" multiple accept="image/*,video/*">
+                    </div>
+                    <div class="flex-row">
+                        <button type="submit" class="btn">Save Window Data</button>
+                        <button type="button" class="btn btn-outline" onclick="resetStudioForm()">Reset Form</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- TAB 4: SIMONE AI & TASK COMMAND (Set B) -->
+        <div id="tab-simone" class="tab-content">
+            <div class="card">
+                <h2>SIMONE Command Center (Local Demo Mode)[span_6](start_span)[span_6](end_span)</h2>
+                <p>Execute local structural prompts, text organization, or manage your checklist tasks.</p>
+                <div class="chat-box" id="chatLog">
+                    <div class="chat-msg simone">SIMONE: Online in local client mode. Tell me what you'd like to plan or organize[span_7](start_span)[span_7](end_span).</div>
+                </div>
+                <div class="flex-row">
+                    <input type="text" id="chatInput" placeholder="Enter a command or task query..." style="flex:1;">
+                    <button class="btn" onclick="sendSimoneCommand()">Send</button>
+                </div>
+            </div>
+            <div class="card">
+                <h2>Command Task List</h2>
+                <div class="flex-row form-group">
+                    <input type="text" id="taskInput" placeholder="Add a new checklist task..." style="flex:1;">
+                    <button class="btn" onclick="addTask()">+ Add Task</button>
+                </div>
+                <div id="taskList"></div>
+            </div>
+        </div>
+
+        <!-- TAB 5: INSIGHTS & BACKUP -->
+        <div id="tab-insights" class="tab-content">
+            <div class="card">
+                <h2>Portfolio Analytics & System Insights</h2>
+                <p id="insightStats">Calculating local portfolio distribution...</p>
+                <div class="flex-row mt-2">
+                    <button class="btn" onclick="exportBackup()">Export Backup JSON[span_8](start_span)[span_8](end_span)</button>
+                    <button class="btn btn-outline" onclick="document.getElementById('importFile').click()">Import Backup</button>
+                    <input type="file" id="importFile" style="display:none" onchange="importBackup(event)">
+                    <button class="btn btn-danger" onclick="resetAllData()">Reset Demo Data</button>
                 </div>
             </div>
         </div>
 
-        <div class="glass-panel rounded-2xl p-5 space-y-4">
-            <h4 class="font-orbitron text-xs font-bold tracking-wider text-white uppercase flex items-center gap-2">
-                <i class="fa-solid fa-network-wired text-cyber-cyan"></i> Architecture Profile
-            </h4>
-            <div class="space-y-2 text-sm text-gray-300">
-                <p class="flex items-center justify-between border-b border-white/5 pb-2">
-                    <span class="text-gray-400">Database Engine:</span>
-                    <span class="font-mono text-xs text-emerald-400 font-bold">IndexedDB (v1)</span>
-                </p>
-                <p class="flex items-center justify-between border-b border-white/5 pb-2">
-                    <span class="text-gray-400">Sync Pipeline:</span>
-                    <span class="font-mono text-xs text-amber-400 font-bold">Isolated Browser Frame</span>
-                </p>
-                <p class="flex items-center justify-between">
-                    <span class="text-gray-400">Memory Scope:</span>
-                    <span class="font-mono text-xs text-cyber-blue font-bold">Dynamic Device Allocation</span>
-                </p>
-            </div>
-        </div>
-    </section>
+    </div>
+
+    <script>
+        // State Management
+        let appData = JSON.parse(localStorage.getItem('cyberarch_master_data_v3')) || {
+            windows: [
+                { id: 1, title: "Wholistic Hospitel (Set A, B, C)", category: "Healthcare Architecture", desc: "Integrated hybrid medical facility concept with penthouse, dual helipads, and advanced MEP engineering[span_9](start_span)[span_9](end_span).", tags: ["hospital", "parametric", "healthcare"], mediaCount: 0 },
+                { id: 2, title: "Building Designs & Architectural Renderings", category: "Architecture", desc: "3D exterior renderings, facade concepts, interior views, and parametric structures[span_10](start_span)[span_10](end_span).", tags: ["3D", "exterior", "facade"], mediaCount: 0 }
+            ],
+            achievements: [
+                { id: 1, title: "Global Future Design Award", category: "Awards", date: "2025-10", desc: "Award citation for innovative structural architectural layouts[span_11](start_span)[span_11](end_span)." }
+            ],
+            tasks: [
+                { id: 1, text: "Verify structural load simulation for facade elements", done: false }
+            ]
+        };
+
+        function saveData() {
+            localStorage.setItem('cyberarch_master_data_v3', JSON.stringify(appData));
+            renderAll();
+        }
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            document.getElementById('tab-' + tabId).classList.add('active');
+            event.target.classList.add('active');
+            renderAll();
+        }
+
+        function renderAll() {
+            renderWindows();
+            renderAchievements();
+            renderTasks();
+            renderInsights();
+        }
+
+        // Windows Logic
+        function renderWindows() {
+            const query = document.getElementById('windowSearch').value.toLowerCase();
+            const container = document.getElementById('windowsContainer');
+            container.innerHTML = '';
+            
+            const filtered = appData.windows.filter(w => w.title.toLowerCase().includes(query) || w.desc.toLowerCase().includes(query));
+            
+            if(filtered.length === 0) {
+                container.innerHTML = '<p style="color:var(--text-muted);">No matching portfolio windows found.</p>';
+                return;
+            }
+
+            filtered.forEach(w => {
+                container.innerHTML += `
+                    <div class="item-card">
+                        <h3>${w.title}</h3>
+                        <p>${w.desc}</p>
+                        <span class="badge">${w.category}</span>
+                        <div class="flex-row mt-2 space-between">
+                            <span style="font-size:0.8rem; color:var(--text-muted);">${w.mediaCount} / 50 items[span_12](start_span)[span_12](end_span)[span_13](start_span)[span_13](end_span)</span>
+                            <div>
+                                <button class="btn btn-outline" style="padding:0.2rem 0.5rem; font-size:0.8rem;" onclick="editWindow(${w.id})">Edit</button>
+                                <button class="btn btn-danger" style="padding:0.2rem 0.5rem; font-size:0.8rem;" onclick="deleteWindow(${w.id})">Delete</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function saveWindow(e) {
+            e.preventDefault();
+            const id = document.getElementById('editWindowId').value;
+            const title = document.getElementById('wTitle').value;
+            const category = document.getElementById('wCategory').value;
+            const desc = document.getElementById('wDesc').value;
+            const tags = document.getElementById('wTags').value.split(',').map(t => t.trim());
+
+            if(id) {
+                const win = appData.windows.find(w => w.id == id);
+                win.title = title;
+                win.category = category;
+                win.desc = desc;
+                win.tags = tags;
+            } else {
+                appData.windows.push({ id: Date.now(), title, category, desc, tags, mediaCount: 0 });
+            }
+
+            saveData();
+            document.getElementById('portfolioForm').reset();
+            document.getElementById('editWindowId').value = '';
+            switchTab('windows');
+        }
+
+        function editWindow(id) {
+            const w = appData.windows.find(item => item.id == id);
+            document.getElementById('editWindowId').value = w.id;
+            document.getElementById('wTitle').value = w.title;
+            document.getElementById('wCategory').value = w.category;
+            document.getElementById('wDesc').value = w.desc;
+            document.getElementById('wTags').value = w.tags.join(', ');
+            switchTab('studio');
+        }
+
+        function deleteWindow(id) {
+            appData.windows = appData.windows.filter(w => w.id != id);
+            saveData();
+        }
+
+        function resetStudioForm() {
+            document.getElementById('portfolioForm').reset();
+            document.getElementById('editWindowId').value = '';
+        }
+
+        // Achievements Logic
+        function renderAchievements() {
+            const container = document.getElementById('achievementsContainer');
+            container.innerHTML = '';
+            appData.achievements.forEach(a => {
+                container.innerHTML += `
+                    <div class="item-card">
+                        <h3>${a.title}</h3>
+                        <p>${a.desc}</p>
+                        <span class="badge">${a.category} — ${a.date}</span>
+                    </div>
+                `;
+            });
+        }
+
+        function openAddAchievementModal() {
+            const title = prompt("Enter Achievement Title:");
+            if(!title) return;
+            const desc = prompt("Enter Description:");
+            appData.achievements.push({ id: Date.now(), title, category: "Milestone", date: "2026", desc });
+            saveData();
+        }
+
+        // SIMONE AI & Task Logic
+        function sendSimoneCommand() {
+            const input = document.getElementById('chatInput');
+            const log = document.getElementById('chatLog');
+            if(!input.value.trim()) return;
+
+            log.innerHTML += `<div class="chat-msg user">USER: ${input.value}</div>`;
+            const cmd = input.value;
+            input.value = '';
+
+            setTimeout(() => {
+                let reply = "SIMONE: Command executed successfully in local state context.";
+                if(cmd.toLowerCase().includes('task')) reply = "SIMONE: Check your command task list below for tracking.";
+                log.innerHTML += `<div class="chat-msg simone">${reply}</div>`;
+                log.scrollTop = log.scrollHeight;
+            }, 300);
+        }
+
+        function addTask() {
+            const input = document.getElementById('taskInput');
+            if(!input.value.trim()) return;
+            appData.tasks.push({ id: Date.now(), text: input.value, done: false });
+            input.value = '';
+            saveData();
+        }
+
+        function renderTasks() {
+            const list = document.getElementById('taskList');
+            list.innerHTML = '';
+            appData.tasks.forEach(t => {
+                list.innerHTML += `
+                    <div class="flex-row space-enclosed" style="padding:0.4rem 0; border-bottom:1px solid var(--border-color);">
+                        <span>${t.text}</span>
+                        <button class="btn btn-outline" style="padding:0.2rem 0.5rem; font-size:0.75rem;" onclick="appData.tasks = appData.tasks.filter(x => x.id != ${t.id}); saveData();">Complete</button>
+                    </div>
+                `;
+            });
+        }
+
+        // Insights & Backup
+        function renderInsights() {
+            document.getElementById('insightStats').innerText = `Total Curated Windows: ${appData.windows.length} | Total Achievements: ${appData.achievements.length} | Active Tasks: ${appData.tasks.length}`;
+        }
+
+        function exportBackup() {
+            const blob = new Blob([JSON.stringify(appData, null, 2)], {type: 'application/json'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'cyberarch_master_backup.json';
+            a.click();
+        }
+
+        function importBackup(e) {
+            const file = e.target.files[0];
+            if(!file) return;
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                appData = JSON.parse(evt.target.result);
+                saveData();
+                alert('Backup successfully imported!');
+            };
+            reader.readAsText(file);
+        }
+
+        function resetAllData() {
+            if(confirm('Reset all local portfolio data?')) {
+                localStorage.removeItem('cyberarch_master_data_v3');
+                location.reload();
+            }
+        }
+
+        // Initial Load
+        renderAll();
+    </script>
+</body>
+</html>
