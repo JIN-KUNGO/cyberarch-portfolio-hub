@@ -137,6 +137,23 @@
         .item-card h3 { color: var(--accent-cyan); font-size: 1.1rem; margin-bottom: 0.4rem; }
         .item-card p { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 0.8rem; }
         
+        /* Image Thumbnail Gallery */
+        .media-gallery {
+            display: flex;
+            gap: 0.5rem;
+            overflow-x: auto;
+            margin-bottom: 0.8rem;
+            padding-bottom: 0.4rem;
+        }
+        .media-thumb {
+            width: 70px;
+            height: 70px;
+            object-fit: cover;
+            border-radius: 4px;
+            border: 1px solid var(--border-color);
+            flex-shrink: 0;
+        }
+
         .badge {
             display: inline-block;
             background: rgba(255, 204, 0, 0.1);
@@ -175,7 +192,7 @@
     </header>
 
     <div class="banner">
-        ⚠️ <strong>Local IndexedDB Mode:</strong> Data is saved locally to your browser instance. Connect a backend like Supabase for public cross-device publishing[span_0](start_span)[span_0](end_span)[span_1](start_span)[span_1](end_span).
+        ⚠️ <strong>Local Browser Mode:</strong> Images and files are saved directly into your browser's local storage database.
     </div>
 
     <nav>
@@ -188,38 +205,34 @@
 
     <div class="container">
 
-        <!-- TAB 1: WINDOWS & ALBUMS (Set B & C) -->
+        <!-- TAB 1: WINDOWS & ALBUMS -->
         <div id="tab-windows" class="tab-content active">
             <div class="card space-between flex-row">
                 <div>
                     <h2>Curated Project Windows</h2>
-                    <p>Organize up to 50 items per window across architectural albums[span_2](start_span)[span_2](end_span)[span_3](start_span)[span_3](end_span).</p>
+                    <p>Organize project windows across architectural albums.</p>
                 </div>
                 <button class="btn" onclick="switchTab('studio')">+ Create New Window</button>
             </div>
             <div class="form-group">
                 <input type="text" id="windowSearch" placeholder="Search project windows, tags, or albums..." oninput="renderWindows()">
             </div>
-            <div id="windowsContainer" class="grid-list">
-                <!-- Dynamically populated -->
-            </div>
+            <div id="windowsContainer" class="grid-list"></div>
         </div>
 
-        <!-- TAB 2: ACHIEVEMENTS (Set A) -->
+        <!-- TAB 2: ACHIEVEMENTS -->
         <div id="tab-achievements" class="tab-content">
             <div class="card space-between flex-row">
                 <div>
                     <h2>Milestones & Career Achievements</h2>
-                    <p>Manage professional records, competition awards, and credentials.</p>
+                    <p>Manage professional records and awards.</p>
                 </div>
                 <button class="btn" onclick="openAddAchievementModal()">+ Add Milestone</button>
             </div>
-            <div id="achievementsContainer" class="grid-list">
-                <!-- Dynamically populated -->
-            </div>
+            <div id="achievementsContainer" class="grid-list"></div>
         </div>
 
-        <!-- TAB 3: STUDIO EDITOR (Set B & C Form) -->
+        <!-- TAB 3: STUDIO EDITOR -->
         <div id="tab-studio" class="tab-content">
             <div class="card">
                 <h2 id="formTitle">Create or Update Portfolio Window</h2>
@@ -240,15 +253,15 @@
                     </div>
                     <div class="form-group">
                         <label>Description</label>
-                        <textarea id="wDesc" placeholder="Describe the project specs, engineering scale, or design goals..."></textarea>
+                        <textarea id="wDesc" placeholder="Describe project specs, engineering scale, or design goals..."></textarea>
                     </div>
                     <div class="form-group">
                         <label>Tags (Comma-separated)</label>
                         <input type="text" id="wTags" placeholder="3D, parametric, hospital, sustainable">
                     </div>
                     <div class="form-group">
-                        <label>Add Media Files (Max 50 items per window)[span_4](start_span)[span_4](end_span)[span_5](start_span)[span_5](end_span)</label>
-                        <input type="file" id="wFiles" multiple accept="image/*,video/*">
+                        <label>Add Images & Photos (Stored Locally)</label>
+                        <input type="file" id="wFiles" multiple accept="image/*">
                     </div>
                     <div class="flex-row">
                         <button type="submit" class="btn">Save Window Data</button>
@@ -258,13 +271,12 @@
             </div>
         </div>
 
-        <!-- TAB 4: SIMONE AI & TASK COMMAND (Set B) -->
+        <!-- TAB 4: SIMONE AI & TASKS -->
         <div id="tab-simone" class="tab-content">
             <div class="card">
-                <h2>SIMONE Command Center (Local Demo Mode)[span_6](start_span)[span_6](end_span)</h2>
-                <p>Execute local structural prompts, text organization, or manage your checklist tasks.</p>
+                <h2>SIMONE Command Center</h2>
                 <div class="chat-box" id="chatLog">
-                    <div class="chat-msg simone">SIMONE: Online in local client mode. Tell me what you'd like to plan or organize[span_7](start_span)[span_7](end_span).</div>
+                    <div class="chat-msg simone">SIMONE: Online in local client mode. Tell me what you'd like to plan or organize.</div>
                 </div>
                 <div class="flex-row">
                     <input type="text" id="chatInput" placeholder="Enter a command or task query..." style="flex:1;">
@@ -287,7 +299,7 @@
                 <h2>Portfolio Analytics & System Insights</h2>
                 <p id="insightStats">Calculating local portfolio distribution...</p>
                 <div class="flex-row mt-2">
-                    <button class="btn" onclick="exportBackup()">Export Backup JSON[span_8](start_span)[span_8](end_span)</button>
+                    <button class="btn" onclick="exportBackup()">Export Backup JSON</button>
                     <button class="btn btn-outline" onclick="document.getElementById('importFile').click()">Import Backup</button>
                     <input type="file" id="importFile" style="display:none" onchange="importBackup(event)">
                     <button class="btn btn-danger" onclick="resetAllData()">Reset Demo Data</button>
@@ -298,14 +310,12 @@
     </div>
 
     <script>
-        // State Management
-        let appData = JSON.parse(localStorage.getItem('cyberarch_master_data_v3')) || {
+        let appData = JSON.parse(localStorage.getItem('cyberarch_master_data_v4')) || {
             windows: [
-                { id: 1, title: "Wholistic Hospitel (Set A, B, C)", category: "Healthcare Architecture", desc: "Integrated hybrid medical facility concept with penthouse, dual helipads, and advanced MEP engineering[span_9](start_span)[span_9](end_span).", tags: ["hospital", "parametric", "healthcare"], mediaCount: 0 },
-                { id: 2, title: "Building Designs & Architectural Renderings", category: "Architecture", desc: "3D exterior renderings, facade concepts, interior views, and parametric structures[span_10](start_span)[span_10](end_span).", tags: ["3D", "exterior", "facade"], mediaCount: 0 }
+                { id: 1, title: "Wholistic Hospitel Concept", category: "Healthcare Architecture", desc: "Integrated hybrid medical facility concept with penthouse and dual helipads.", tags: ["hospital", "healthcare"], images: [] }
             ],
             achievements: [
-                { id: 1, title: "Global Future Design Award", category: "Awards", date: "2025-10", desc: "Award citation for innovative structural architectural layouts[span_11](start_span)[span_11](end_span)." }
+                { id: 1, title: "Global Future Design Award", category: "Awards", date: "2025-10", desc: "Award citation for innovative structural architectural layouts." }
             ],
             tasks: [
                 { id: 1, text: "Verify structural load simulation for facade elements", done: false }
@@ -313,7 +323,7 @@
         };
 
         function saveData() {
-            localStorage.setItem('cyberarch_master_data_v3', JSON.stringify(appData));
+            localStorage.setItem('cyberarch_master_data_v4', JSON.stringify(appData));
             renderAll();
         }
 
@@ -332,7 +342,6 @@
             renderInsights();
         }
 
-        // Windows Logic
         function renderWindows() {
             const query = document.getElementById('windowSearch').value.toLowerCase();
             const container = document.getElementById('windowsContainer');
@@ -346,13 +355,21 @@
             }
 
             filtered.forEach(w => {
+                let imageGalleryHtml = '';
+                if(w.images && w.images.length > 0) {
+                    imageGalleryHtml = `<div class="media-gallery">` + 
+                        w.images.map(img => `<img src="${img}" class="media-thumb" alt="Project image">`).join('') + 
+                        `</div>`;
+                }
+
                 container.innerHTML += `
                     <div class="item-card">
                         <h3>${w.title}</h3>
                         <p>${w.desc}</p>
+                        ${imageGalleryHtml}
                         <span class="badge">${w.category}</span>
                         <div class="flex-row mt-2 space-between">
-                            <span style="font-size:0.8rem; color:var(--text-muted);">${w.mediaCount} / 50 items[span_12](start_span)[span_12](end_span)[span_13](start_span)[span_13](end_span)</span>
+                            <span style="font-size:0.8rem; color:var(--text-muted);">${w.images ? w.images.length : 0} image(s) attached</span>
                             <div>
                                 <button class="btn btn-outline" style="padding:0.2rem 0.5rem; font-size:0.8rem;" onclick="editWindow(${w.id})">Edit</button>
                                 <button class="btn btn-danger" style="padding:0.2rem 0.5rem; font-size:0.8rem;" onclick="deleteWindow(${w.id})">Delete</button>
@@ -370,15 +387,50 @@
             const category = document.getElementById('wCategory').value;
             const desc = document.getElementById('wDesc').value;
             const tags = document.getElementById('wTags').value.split(',').map(t => t.trim());
+            const fileInput = document.getElementById('wFiles');
 
+            // Helper function to process file uploads into Base64 strings
+            const processFilesAndSave = (existingImages = []) => {
+                const files = fileInput.files;
+                if (files.length === 0) {
+                    finalizeSave(existingImages, id, title, category, desc, tags);
+                    return;
+                }
+
+                let loadedCount = 0;
+                let newImages = [...existingImages];
+
+                Array.from(files).forEach(file => {
+                    const reader = new FileReader();
+                    reader.onload = function(uploadEvent) {
+                        newImages.push(uploadEvent.target.result);
+                        loadedCount++;
+                        if (loadedCount === files.length) {
+                            finalizeSave(newImages, id, title, category, desc, tags);
+                        }
+                    };
+                    reader.readAsDataURL(file);
+                });
+            };
+
+            if (id) {
+                const win = appData.windows.find(w => w.id == id);
+                processFilesAndSave(win.images || []);
+            } else {
+                processFilesAndSave([]);
+            }
+        }
+
+        function finalizeSave(images, id, title, category, desc, tags) {
             if(id) {
                 const win = appData.windows.find(w => w.id == id);
                 win.title = title;
                 win.category = category;
                 win.desc = desc;
                 win.tags = tags;
+                win.images = images;
             } else {
-                appData.windows.push({ id: Date.now(), title, category, desc, tags, mediaCount: 0 });
+                appData.windows.push({ id: Date.now(), title, category, desc, tags, images });
             }
 
             saveData();
@@ -393,7 +445,7 @@
             document.getElementById('wTitle').value = w.title;
             document.getElementById('wCategory').value = w.category;
             document.getElementById('wDesc').value = w.desc;
-            document.getElementById('wTags').value = w.tags.join(', ');
+            document.getElementById('wTags').value = w.tags ? w.tags.join(', ') : '';
             switchTab('studio');
         }
 
@@ -407,7 +459,6 @@
             document.getElementById('editWindowId').value = '';
         }
 
-        // Achievements Logic
         function renderAchievements() {
             const container = document.getElementById('achievementsContainer');
             container.innerHTML = '';
@@ -430,20 +481,16 @@
             saveData();
         }
 
-        // SIMONE AI & Task Logic
         function sendSimoneCommand() {
             const input = document.getElementById('chatInput');
             const log = document.getElementById('chatLog');
             if(!input.value.trim()) return;
 
             log.innerHTML += `<div class="chat-msg user">USER: ${input.value}</div>`;
-            const cmd = input.value;
             input.value = '';
 
             setTimeout(() => {
-                let reply = "SIMONE: Command executed successfully in local state context.";
-                if(cmd.toLowerCase().includes('task')) reply = "SIMONE: Check your command task list below for tracking.";
-                log.innerHTML += `<div class="chat-msg simone">${reply}</div>`;
+                log.innerHTML += `<div class="chat-msg simone">SIMONE: Command executed successfully in local state context.</div>`;
                 log.scrollTop = log.scrollHeight;
             }, 300);
         }
@@ -461,7 +508,7 @@
             list.innerHTML = '';
             appData.tasks.forEach(t => {
                 list.innerHTML += `
-                    <div class="flex-row space-enclosed" style="padding:0.4rem 0; border-bottom:1px solid var(--border-color);">
+                    <div class="flex-row space-between" style="padding:0.4rem 0; border-bottom:1px solid var(--border-color);">
                         <span>${t.text}</span>
                         <button class="btn btn-outline" style="padding:0.2rem 0.5rem; font-size:0.75rem;" onclick="appData.tasks = appData.tasks.filter(x => x.id != ${t.id}); saveData();">Complete</button>
                     </div>
@@ -469,7 +516,6 @@
             });
         }
 
-        // Insights & Backup
         function renderInsights() {
             document.getElementById('insightStats').innerText = `Total Curated Windows: ${appData.windows.length} | Total Achievements: ${appData.achievements.length} | Active Tasks: ${appData.tasks.length}`;
         }
@@ -497,12 +543,11 @@
 
         function resetAllData() {
             if(confirm('Reset all local portfolio data?')) {
-                localStorage.removeItem('cyberarch_master_data_v3');
+                localStorage.removeItem('cyberarch_master_data_v4');
                 location.reload();
             }
         }
 
-        // Initial Load
         renderAll();
     </script>
 </body>
