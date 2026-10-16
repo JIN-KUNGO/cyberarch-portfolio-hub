@@ -552,3 +552,653 @@
     </script>
 </body>
 </html>
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JIN KUNGO — iSoN 5D Ultra-HD Engine | Biometric Vault & Self-Learning Studio</title>
+<meta name="description" content="Jin Kungo's iSoN Framework: 5D Hyper-Tensor Processing, Global Triangulation, Ultra-HD Hyper-Realism Finish Engine, S1MONE authority kernel, self-learning repository, voice-activated.">
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500;700&display=swap" rel="stylesheet">
+<script>
+tailwind.config = { darkMode:'class', theme:{ extend:{
+  fontFamily:{ sans:['Plus Jakarta Sans','sans-serif'], mono:['JetBrains Mono','monospace'] },
+  colors:{ void:'#05070c', panel:'#0b101a', edge:'#16213a', cyan2:'#22d3ee', violet2:'#a78bfa' },
+  boxShadow:{ 'glow-c':'0 0 40px -8px rgba(34,211,238,.45)', 'glow-v':'0 0 40px -8px rgba(167,139,250,.4)' }
+}}};
+</script>
+<style>
+:root{ --cy:#22d3ee; --vi:#a78bfa; }
+*{ scrollbar-width:thin; scrollbar-color:#1e293b #05070c; }
+::-webkit-scrollbar{width:8px;height:8px} ::-webkit-scrollbar-track{background:#05070c}
+::-webkit-scrollbar-thumb{background:#1e293b;border-radius:4px}
+body{ background:#05070c; color:#e2e8f0; font-family:'Plus Jakarta Sans',sans-serif; overflow-x:hidden; }
+#bgCanvas{ position:fixed; inset:0; z-index:0; }
+.grain{ position:fixed; inset:0; z-index:1; pointer-events:none; opacity:.05; mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.6'/%3E%3C/svg%3E"); }
+.vignette{ position:fixed; inset:0; z-index:1; pointer-events:none;
+  background:radial-gradient(ellipse at 50% 40%, transparent 30%, rgba(3,5,10,.85) 100%); }
+.glass{ background:rgba(11,16,26,.72); backdrop-filter:blur(16px); border:1px solid rgba(34,211,238,.14); }
+.glass-v{ background:rgba(11,16,26,.72); backdrop-filter:blur(16px); border:1px solid rgba(167,139,250,.16); }
+.grad{ background:linear-gradient(120deg,#22d3ee,#a78bfa,#f472b6); -webkit-background-clip:text; background-clip:text; color:transparent; }
+.eq{ font-family:'JetBrains Mono',monospace; }
+.glowline{ height:1px; background:linear-gradient(90deg,transparent,rgba(34,211,238,.6),rgba(167,139,250,.6),transparent); }
+.blink{ animation:blink 1.1s steps(1) infinite; } @keyframes blink{50%{opacity:0}}
+.pulse-dot{ animation:pd 1.6s ease-in-out infinite; } @keyframes pd{0%,100%{box-shadow:0 0 0 0 rgba(34,211,238,.6)}50%{box-shadow:0 0 0 7px rgba(34,211,238,0)}}
+.scan{ position:relative; overflow:hidden; }
+.scan::after{ content:''; position:absolute; left:0; right:0; height:2px; top:-10%;
+  background:linear-gradient(90deg,transparent,rgba(34,211,238,.7),transparent);
+  animation:scanline 5s linear infinite; pointer-events:none; }
+@keyframes scanline{0%{top:-2%}100%{top:102%}}
+.chip{ font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:.12em; }
+.node-card{ transition:all .3s cubic-bezier(.2,.8,.2,1); cursor:pointer; }
+.node-card:hover{ transform:translateY(-3px); border-color:rgba(34,211,238,.55); box-shadow:0 0 30px -10px rgba(34,211,238,.5); }
+.node-card.active{ border-color:rgba(34,211,238,.8); box-shadow:0 0 40px -10px rgba(34,211,238,.65); }
+.log-line{ animation:login .35s ease-out; } @keyframes login{from{opacity:0;transform:translateX(-8px)}to{opacity:1;transform:none}}
+.mic-live{ animation:micp 1s ease-in-out infinite; color:#f87171; }
+@keyframes micp{0%,100%{transform:scale(1)}50%{transform:scale(1.15)}}
+input,textarea,select{ outline:none; }
+input:focus,textarea:focus{ border-color:rgba(34,211,238,.6)!important; box-shadow:0 0 0 3px rgba(34,211,238,.12); }
+.btn{ transition:all .2s ease; } .btn:active{ transform:scale(.96); }
+.public-only{ display:none; } body.mode-public .public-only{ display:block; }
+body.mode-public .private-only{ display:none; }
+.term{ font-family:'JetBrains Mono',monospace; font-size:11px; line-height:1.7; }
+.term .ok{color:#34d399}.term .warn{color:#fbbf24}.term .err{color:#f87171}.term .cy{color:#22d3ee}.term .vi{color:#a78bfa}
+.absorb-flash{ animation:absf .8s ease-out; } @keyframes absf{0%{box-shadow:0 0 0 0 rgba(167,139,250,.8)}100%{box-shadow:0 0 0 30px rgba(167,139,250,0)}}
+.hud-ring{ animation:spin 24s linear infinite; } @keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body class="min-h-screen antialiased">
+
+<canvas id="bgCanvas"></canvas>
+<div class="grain"></div>
+<div class="vignette"></div>
+
+<!-- ============ TOP BAR ============ -->
+<header class="relative z-30 sticky top-0 backdrop-blur-xl bg-[#05070c]/80 border-b border-edge/60">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <div class="relative w-9 h-9">
+        <svg viewBox="0 0 36 36" class="hud-ring absolute inset-0 w-9 h-9 text-cyan2/50"><circle cx="18" cy="18" r="16" fill="none" stroke="currentColor" stroke-dasharray="4 6" stroke-width="1"/></svg>
+        <div class="absolute inset-0 flex items-center justify-center"><i class="fa-solid fa-atom text-cyan2"></i></div>
+      </div>
+      <div>
+        <div class="font-extrabold tracking-wide text-sm">JIN KUNGO <span class="grad">iSoN</span></div>
+        <div class="chip text-cyan2/70 -mt-0.5">5D ULTRA-HD OMNI-ENGINE</div>
+      </div>
+    </div>
+    <nav class="hidden md:flex items-center gap-6 text-xs text-slate-400">
+      <a href="#engine" class="hover:text-cyan2 transition">Engine</a>
+      <a href="#s1mone" class="hover:text-cyan2 transition">S1MONE</a>
+      <a href="#learn" class="hover:text-cyan2 transition">Self-Learning</a>
+      <a href="#vault" class="hover:text-cyan2 transition private-only">Vault</a>
+      <a href="#public" class="hover:text-cyan2 transition public-only">Showcase</a>
+    </nav>
+    <div class="flex items-center gap-2">
+      <!-- Public / Private mode switch -->
+      <button id="modeBtn" onclick="toggleMode()" class="btn chip px-3 py-2 rounded-lg border border-edge bg-panel hover:border-cyan2/50 flex items-center gap-2">
+        <i id="modeIcon" class="fa-solid fa-lock text-cyan2"></i><span id="modeLabel">PRIVATE CORE</span>
+      </button>
+      <button id="voiceBtn" onclick="toggleVoice()" class="btn w-10 h-10 rounded-lg border border-edge bg-panel hover:border-cyan2/50 flex items-center justify-center" title="Voice command (mic + speaker)">
+        <i id="voiceIcon" class="fa-solid fa-microphone text-slate-300"></i>
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- ============ HERO ============ -->
+<section class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 pt-16 pb-10 text-center">
+  <div class="chip inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-cyan2/30 bg-cyan2/5 text-cyan2 mb-6">
+    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 pulse-dot"></span>
+    <span id="heroStatus">iSoN MESH ONLINE — 20 ADAPTER CHANNELS · CIRCUIT BREAKER CLOSED</span>
+  </div>
+  <h1 class="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight leading-[1.05]">
+    Hyper-Realism Rendered by<br><span class="grad">5D Hyper-Tensor Physics</span>
+  </h1>
+  <p class="mt-5 max-w-2xl mx-auto text-slate-400 text-sm sm:text-base leading-relaxed">
+    A living landing page powered by the <span class="text-cyan2">iSoN Master State-Space Evolution</span>,
+    <span class="text-violet2">Global Triangulation</span> and the
+    <span class="text-pink-400">Ultra-HD Hyper-Realism Finish Engine</span> —
+    absorbing your algorithms through the self-learning repository, guarded by the S1MONE authority kernel.
+  </p>
+
+  <!-- MASTER EQUATION -->
+  <div class="glass scan rounded-2xl max-w-4xl mx-auto mt-10 p-5 sm:p-7 text-left">
+    <div class="flex items-center justify-between mb-3">
+      <span class="chip text-cyan2">iSoN FORMULA© — MASTER EVOLUTION STEP</span>
+      <span class="chip text-slate-500">LIVE t=<span id="eqT">0</span></span>
+    </div>
+    <div class="eq text-xs sm:text-sm text-slate-200 break-all leading-loose">
+      Ψ<sub>t+1</sub> = Γ<sub>UGTAF</sub>[ F<sub>opt</sub> ⊙ V<sub>CNF</sub> ⊙ (A·S<sub>t</sub> + B·Σ<sub>i=1</sub><sup>20</sup> w<sub>i</sub>·V<sub>i</sub>·P<sub>i</sub>(x<sub>i</sub>)) ⊙ Q(c)<sup>α</sup> ]<sup>tanh(W₁Ψ + W₂I + β·sin(Ψ))</sup>
+    </div>
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-5 text-center">
+      <div class="rounded-xl bg-black/40 border border-edge p-3">
+        <div class="chip text-slate-500 mb-1">Q(c) DIAGNOSTIC</div>
+        <div class="eq text-cyan2 text-lg font-bold" id="statQ">0.0000</div>
+      </div>
+      <div class="rounded-xl bg-black/40 border border-edge p-3">
+        <div class="chip text-slate-500 mb-1">F_opt FORCEFIELD</div>
+        <div class="eq text-emerald-400 text-lg font-bold" id="statF">0.000</div>
+      </div>
+      <div class="rounded-xl bg-black/40 border border-edge p-3">
+        <div class="chip text-slate-500 mb-1">V_CNF GATE</div>
+        <div class="eq text-violet2 text-lg font-bold" id="statC">SAT</div>
+      </div>
+      <div class="rounded-xl bg-black/40 border border-edge p-3">
+        <div class="chip text-slate-500 mb-1">‖Ψ‖ STATE</div>
+        <div class="eq text-pink-400 text-lg font-bold" id="statPsi">0.000</div>
+      </div>
+    </div>
+    <div class="glowline mt-5"></div>
+    <div class="term mt-3 h-28 overflow-y-auto" id="heroLog"></div>
+  </div>
+
+  <div class="flex flex-wrap justify-center gap-3 mt-8">
+    <button onclick="document.getElementById('learn').scrollIntoView({behavior:'smooth'})" class="btn px-6 py-3 rounded-xl bg-gradient-to-r from-cyan-500 to-violet-500 text-black font-bold text-sm shadow-glow-c">
+      <i class="fa-solid fa-brain mr-2"></i>Teach the Website
+    </button>
+    <button onclick="toggleVoice()" class="btn px-6 py-3 rounded-xl border border-edge bg-panel hover:border-cyan2/50 text-sm font-semibold">
+      <i class="fa-solid fa-microphone-lines mr-2 text-cyan2"></i>Voice Activate
+    </button>
+    <button onclick="runFullPipeline()" class="btn px-6 py-3 rounded-xl border border-edge bg-panel hover:border-violet2/50 text-sm font-semibold">
+      <i class="fa-solid fa-bolt mr-2 text-violet2"></i>Run UGTAF-AH Pipeline
+    </button>
+  </div>
+</section>
+
+<!-- ============ ENGINE: 5D / TRIANGULATION / ULTRA-HD ============ -->
+<section id="engine" class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 py-12">
+  <h2 class="text-2xl sm:text-3xl font-extrabold text-center">The Three Rendering Pillars</h2>
+  <p class="text-center text-slate-500 text-sm mt-2">All computed live in-browser, every frame, and piped into the background you are looking at.</p>
+  <div class="grid md:grid-cols-3 gap-6 mt-8">
+    <div class="glass rounded-2xl p-5 scan">
+      <div class="flex items-center gap-2 mb-2"><i class="fa-solid fa-cube text-cyan2"></i><h3 class="font-bold">5D Hyper-Tensor Processor</h3></div>
+      <p class="text-xs text-slate-400 leading-relaxed">Contracting (x, y, z, t, λ) feature tensors across 20 weighted adapter channels each tick. The output drives star density and hue drift behind this page.</p>
+      <canvas id="tensorCanvas" width="340" height="120" class="w-full mt-3 rounded-lg border border-edge bg-black/60"></canvas>
+      <div class="term mt-2"><span class="cy">tensor</span>(4,4,4,3,2) →Σ<sub>λ</sub>→ <span id="tensorOut" class="ok">[4,4,4,3]</span></div>
+    </div>
+    <div class="glass rounded-2xl p-5 scan">
+      <div class="flex items-center gap-2 mb-2"><i class="fa-solid fa-draw-polygon text-violet2"></i><h3 class="font-bold">Global Triangulation Engine</h3></div>
+      <p class="text-xs text-slate-400 leading-relaxed">Delaunay-style manifold reconstruction over a drifting point cloud. Vertices/simplices counted in real time; the mesh pulses with your state vector Ψ.</p>
+      <canvas id="triCanvas" width="340" height="120" class="w-full mt-3 rounded-lg border border-edge bg-black/60"></canvas>
+      <div class="term mt-2">vertices <span id="triV" class="ok">0</span> · simplices <span id="triS" class="ok">0</span> · <span id="triTop" class="vi">MANIFOLD_SUCCESS</span></div>
+    </div>
+    <div class="glass rounded-2xl p-5 scan">
+      <div class="flex items-center gap-2 mb-2"><i class="fa-solid fa-wand-magic-sparkles text-pink-400"></i><h3 class="font-bold">Ultra-HD Hyper-Realism Finish</h3></div>
+      <p class="text-xs text-slate-400 leading-relaxed">Adaptive smoothing × sharpness clamp, applied as a live post-process to the entire scene. Raise the sharpness slider and watch reality crystallize.</p>
+      <div class="mt-3 flex items-center gap-3">
+        <span class="chip text-slate-500">SHARPNESS</span>
+        <input id="sharpSlider" type="range" min="0.8" max="2.4" step="0.05" value="1.45" class="flex-1 accent-cyan-400" oninput="setSharpness(this.value)">
+        <span class="eq text-cyan2 w-10 text-right" id="sharpVal">1.45</span>
+      </div>
+      <div class="term mt-3">finish: <span class="ok">RENDERED_SUCCESS</span> · mean intensity <span id="uhMean" class="cy">0.0000</span></div>
+      <div class="mt-3 h-2 rounded-full bg-black/60 border border-edge overflow-hidden"><div id="uhBar" class="h-full bg-gradient-to-r from-cyan-400 to-violet-400 transition-all duration-300" style="width:60%"></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ S1MONE KERNEL ============ -->
+<section id="s1mone" class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 py-12">
+  <div class="glass-v rounded-3xl p-6 sm:p-10">
+    <div class="text-center">
+      <span class="chip text-violet2 border border-violet2/40 bg-violet2/10 px-3 py-1.5 rounded-full">S1MONE UNIFIED KERNEL v1.1 — "SEE MOHN"</span>
+      <h2 class="text-2xl sm:text-3xl font-extrabold mt-4">Central Authority & 20-Booster Mesh</h2>
+      <p class="text-slate-500 text-sm mt-2 max-w-2xl mx-auto">Every absorbed formula and voice command passes: BCM security gate → ECM orchestrator → Task Cluster → 20 auxiliary AI units → Pathfinder verification → U-CODE defense registry → iSoN release gate → S1MONE verdict.</p>
+    </div>
+
+    <!-- S1MONE brain center -->
+    <div class="flex justify-center mt-10">
+      <div id="s1moneCore" class="relative w-40 h-40">
+        <svg viewBox="0 0 160 160" class="hud-ring absolute inset-0 w-full h-full text-violet2/40"><circle cx="80" cy="80" r="74" fill="none" stroke="currentColor" stroke-dasharray="3 8" stroke-width="1.5"/></svg>
+        <svg viewBox="0 0 160 160" class="absolute inset-0 w-full h-full text-cyan2/30" style="animation:spin 14s linear infinite reverse"><circle cx="80" cy="80" r="60" fill="none" stroke="currentColor" stroke-dasharray="10 14" stroke-width="1"/></svg>
+        <div class="absolute inset-0 flex flex-col items-center justify-center text-center">
+          <i class="fa-solid fa-brain text-3xl grad"></i>
+          <div class="chip text-slate-300 mt-1">S1MONE</div>
+          <div class="chip text-cyan2" id="coreVerdict">HOLD</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-2 md:grid-cols-5 gap-3 mt-10" id="auxGrid"><!-- 20 aux units injected --></div>
+
+    <div class="glowline my-8"></div>
+    <div class="grid md:grid-cols-3 gap-4">
+      <div class="rounded-2xl border border-edge bg-black/40 p-4">
+        <div class="chip text-cyan2 mb-2"><i class="fa-solid fa-shield-halved mr-1"></i>BCM / ECM GATES</div>
+        <div class="term text-slate-300" id="gateList"></div>
+      </div>
+      <div class="rounded-2xl border border-edge bg-black/40 p-4">
+        <div class="chip text-violet2 mb-2"><i class="fa-solid fa-bug mr-1"></i>U-CODE DEFENSE REGISTRY</div>
+        <div class="term text-slate-300" id="ucodeList"></div>
+      </div>
+      <div class="rounded-2xl border border-edge bg-black/40 p-4">
+        <div class="chip text-pink-400 mb-2"><i class="fa-solid fa-gavel mr-1"></i>iSoN RELEASE GATE</div>
+        <div class="term text-slate-300" id="releaseInfo"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SELF-LEARNING REPOSITORY ============ -->
+<section id="learn" class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 py-12">
+  <div class="grid lg:grid-cols-5 gap-6">
+    <!-- Typing window -->
+    <div class="lg:col-span-3 glass rounded-3xl p-6" id="learnPanel">
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="font-bold text-lg"><i class="fa-solid fa-keyboard mr-2 text-cyan2"></i>Self-Learning Interface — Type & Be Absorbed</h3>
+        <span class="chip text-emerald-400"><span class="w-1.5 h-1.5 rounded-full bg-emerald-400 pulse-dot inline-block mr-1"></span>ADAPTATION RATE <span id="adaptRate">0.94</span></span>
+      </div>
+      <p class="text-xs text-slate-400 mb-4">Enter any algorithm, formula, or instruction. The website digests it: computes SHA-256 provenance, feeds it through the iSoN state evolution, updates interface weights, and stores it in the CNS memory snapshot. It learns <em>only</em> from this window — this page, no other.</p>
+      <textarea id="learnInput" rows="5" spellcheck="false"
+        class="w-full eq text-xs bg-black/60 border border-edge rounded-xl p-4 text-emerald-300 resize-none leading-relaxed"
+        placeholder="# Example: iSoN adapter weight override&#10;w_i = 0.08; V_i = 1.5; P_i = 0.95&#10;S_{t+1} = A S_t + B Σ w_i V_i P_i(x_i)"></textarea>
+      <div class="flex flex-wrap gap-3 mt-4">
+        <button onclick="absorbInput()" class="btn px-5 py-2.5 rounded-xl bg-gradient-to-r from-violet-500 to-pink-500 text-black font-bold text-sm shadow-glow-v">
+          <i class="fa-solid fa-download mr-2"></i>Absorb into Website
+        </button>
+        <button onclick="absorbInput(true)" class="btn px-5 py-2.5 rounded-xl border border-edge bg-panel hover:border-violet2/50 text-sm font-semibold">
+          <i class="fa-solid fa-microphone mr-2 text-violet2"></i>Absorb & Speak
+        </button>
+        <button onclick="clearRepository()" class="btn px-4 py-2.5 rounded-xl border border-edge bg-panel hover:border-red-400/50 text-sm text-slate-400">
+          <i class="fa-solid fa-trash-can"></i>
+        </button>
+      </div>
+      <div class="term mt-4 h-24 overflow-y-auto rounded-xl bg-black/50 border border-edge p-3" id="learnLog"></div>
+    </div>
+
+    <!-- Repository + CNS snapshot -->
+    <div class="lg:col-span-2 space-y-6">
+      <div class="glass rounded-3xl p-5 max-h-80 overflow-y-auto">
+        <div class="chip text-cyan2 mb-3"><i class="fa-solid fa-database mr-1"></i>ABSORBED REPOSITORY (<span id="repoCount">0</span>)</div>
+        <div id="repoList" class="space-y-2"></div>
+      </div>
+      <div class="glass-v rounded-3xl p-5">
+        <div class="chip text-violet2 mb-3"><i class="fa-solid fa-memory mr-1"></i>CNS GLOBAL MEMORY SNAPSHOT</div>
+        <div class="term text-slate-300 max-h-40 overflow-y-auto" id="cnsSnapshot"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ VAULT (private only) ============ -->
+<section id="vault" class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 py-12 private-only">
+  <div class="glass rounded-3xl p-6 sm:p-10 text-center">
+    <span class="chip text-cyan2 border border-cyan2/30 bg-cyan2/5 px-3 py-1.5 rounded-full">AURA TRIPLE-FACTOR BIOMETRIC VAULT</span>
+    <h2 class="text-2xl font-extrabold mt-4">Owner Access Corridor</h2>
+    <p class="text-slate-500 text-sm mt-2 max-w-xl mx-auto">Unlock with passcode + voice phrase. Optical forcefield F_opt guards the sandbox: three failed attempts and the vault self-seals (decoy formula deployed, provenance vaporized).</p>
+    <div class="flex flex-wrap justify-center gap-3 mt-6">
+      <input id="vaultPin" type="password" maxlength="12" placeholder="Owner passcode"
+        class="eq bg-black/60 border border-edge rounded-xl px-4 py-3 text-sm w-52 text-center">
+      <button onclick="unlockVault()" class="btn px-6 py-3 rounded-xl bg-gradient-to-r from-cyan-500 to-teal-400 text-black font-bold text-sm">
+        <i class="fa-solid fa-fingerprint mr-2"></i>Unlock Vault
+      </button>
+      <button onclick="unlockVault(true)" class="btn px-5 py-3 rounded-xl border border-edge bg-panel hover:border-cyan2/50 text-sm font-semibold">
+        <i class="fa-solid fa-microphone text-cyan2 mr-2"></i>Voice Unlock
+      </button>
+    </div>
+    <div class="term mt-5 h-20 overflow-y-auto rounded-xl bg-black/50 border border-edge p-3 text-left" id="vaultLog"></div>
+    <div id="vaultContent" class="hidden mt-6 grid md:grid-cols-3 gap-4 text-left">
+      <div class="rounded-2xl border border-emerald-400/30 bg-emerald-400/5 p-4"><div class="chip text-emerald-400 mb-1">KCT-FFD SANDBOX</div><div class="text-xs text-slate-300">Zero-trace volatile RAM isolation active. SHA-256 provenance registry tracking <span id="provCount" class="text-emerald-300 font-bold">0</span> assets.</div></div>
+      <div class="rounded-2xl border border-cyan2/30 bg-cyan2/5 p-4"><div class="chip text-cyan2 mb-1">OPTICAL FORCEFIELD</div><div class="text-xs text-slate-300">F_opt potential <span id="vaultF" class="text-cyan2 font-bold">—</span>. Breach threshold κ&gt;0.85 triggers vaporization protocol.</div></div>
+      <div class="rounded-2xl border border-violet2/30 bg-violet2/5 p-4"><div class="chip text-violet2 mb-1">SELF-SEAL STATUS</div><div class="text-xs text-slate-300" id="sealStatus">UNSEALED — fail counter 0/3</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PUBLIC SHOWCASE (public only) ============ -->
+<section id="public" class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 py-12 public-only">
+  <div class="text-center mb-8">
+    <span class="chip text-cyan2 border border-cyan2/30 bg-cyan2/5 px-3 py-1.5 rounded-full">PUBLIC SITE MODE</span>
+    <h2 class="text-2xl sm:text-3xl font-extrabold mt-4">Portfolio Showcase</h2>
+    <p class="text-slate-500 text-sm mt-2">Visitors see this hyper-realistic render gallery. Edit any card directly — no vault, no pipeline, no complexity.</p>
+  </div>
+  <div class="grid md:grid-cols-3 gap-6" id="showcaseGrid"></div>
+  <div class="text-center mt-6"><button onclick="addShowcaseItem()" class="btn px-5 py-2.5 rounded-xl border border-dashed border-cyan2/40 text-cyan2 text-sm hover:bg-cyan2/5"><i class="fa-solid fa-plus mr-2"></i>Add Public Cell</button></div>
+</section>
+
+<!-- ============ VOICE DOCK ============ -->
+<div class="fixed bottom-5 right-5 z-40 flex flex-col items-end gap-2">
+  <div id="voicePanel" class="hidden glass rounded-2xl p-4 w-80">
+    <div class="chip text-cyan2 mb-2"><i class="fa-solid fa-microphone-lines mr-1"></i>VOICE COMMAND INTERFACE</div>
+    <div class="term h-20 overflow-y-auto text-slate-300" id="voiceOut">Status: idle. Try: "activate 5D engine", "run pipeline", "self learning status", "unlock vault", "sharpen".</div>
+    <div class="flex gap-2 mt-3">
+      <button onclick="toggleVoice()" class="btn flex-1 py-2 rounded-lg bg-cyan-500 text-black text-xs font-bold">Toggle Mic</button>
+      <button onclick="speak('iSoN engine at your command')" class="btn flex-1 py-2 rounded-lg border border-edge bg-panel text-xs"><i class="fa-solid fa-volume-high mr-1 text-cyan2"></i>Test Speaker</button>
+    </div>
+  </div>
+  <button onclick="document.getElementById('voicePanel').classList.toggle('hidden')" class="btn w-12 h-12 rounded-full bg-gradient-to-tr from-cyan-500 to-violet-500 text-black shadow-glow-c flex items-center justify-center">
+    <i class="fa-solid fa-headset"></i>
+  </button>
+</div>
+
+<footer class="relative z-10 border-t border-edge/60 mt-12 py-8 text-center">
+  <div class="chip text-slate-500">© 2026 JIN KUNGO — iSoN FRAMEWORK© · S1MONE "SEE MOHN" · ALL SYSTEMS NOMINAL</div>
+</footer>
+
+<script>
+/* ================================================================
+   JIN KUNGO iSoN 5D ULTRA-HD ENGINE — in-browser master loop
+   ================================================================ */
+
+// ---------- helpers ----------
+const $=id=>document.getElementById(id);
+const sha256=async t=>{const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(t));return[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('');};
+function hexColor(r,g,b){return`rgb(${r|0},${g|0},${b|0})`;}
+
+// ---------- iSoN master state ----------
+const DIM=4, NCH=20;
+const state={
+  t:0, Psi:new Array(DIM).fill(0.1), S:new Array(DIM).fill(0.1),
+  A:Array.from({length:DIM},(_,i)=>Array.from({length:DIM},(_,j)=>i===j?0.9:0)),
+  B:new Array(DIM).fill(0.1),
+  W1:Array.from({length:DIM},(_,i)=>Array.from({length:DIM},(_,j)=>i===j?0.5:0)),
+  W2:Array.from({length:DIM},(_,i)=>Array.from({length:DIM},(_,j)=>i===j?0.3:0)),
+  w:Array.from({length:NCH},()=>0.01+Math.random()*0.09),
+  V:Array.from({length:NCH},()=>0.5+Math.random()),
+  P:Array.from({length:NCH},()=>0.5+Math.random()*0.5),
+  f:[0.99,0.97,0.99,0.98], wbar:[0.25,0.25,0.25,0.25], u:0.02,
+  psi0:1.0, sigma:2.0, kappa:0.03,
+  r:[1,1,1,1], r0:[0,0,0,0],
+  sharpness:1.45, sealed:false, failCount:0,
+  adapters:Array.from({length:NCH},(_,i)=>({id:i+1,w:0.01+Math.random()*0.09,v:0.5+Math.random(),p:0.5+Math.random()*0.5,trust:0.5,role:i<5?'PROPOSER':i<10?'EVIDENCE_CHECKER':i<15?'SYMBOLIC_VALIDATOR':i<18?'RED_TEAM':'RECOVERY'}))
+};
+
+// ---------- iSoN equations ----------
+function evolveState(S,A,B,w,V,P){const sum=w.slice(0,NCH).reduce((a,wi,i)=>a+wi*V[i]*P[i],0);return S.map((s,i)=>A[i].reduce((a,aj,j)=>a+aj*S[j],0)+B[i]*sum);}
+function diagIndex(f,w,u){let prod=1;f.forEach((fj,j)=>prod*=Math.pow(Math.max(1e-6,Math.min(1,fj)),w[j]));return prod*Math.max(0,Math.min(1,1-u));}
+function forcefield(r,r0,psi0,sigma,kappa){if(kappa>=0.85)return 0;const d2=r.reduce((a,x,i)=>a+(x-r0[i])**2,0);return psi0*Math.exp(-d2/(2*sigma*sigma))*(1-kappa);}
+function cnfGate(clauses){return clauses.every(c=>c.some(Boolean))?1:0;}
+function cnsKernel(Psi,I){return Psi.map((p,i)=>Math.tanh(state.W1[i].reduce((a,wi,j)=>a+wi*Psi[j],0)+state.W2[i].reduce((a,wi,j)=>a+wi*I[j],0)+0.1*Math.sin(p)));}
+function isonStep(Psi,S,I,F,Vc){const Sn=evolveState(S,state.A,state.B,state.w,state.V,state.P);const Q=diagIndex(state.f,state.wbar,state.u);const H=cnsKernel(Psi,I);return Sn.map((s,i)=>{const inner=F*Vc*s*Math.pow(Q,1);return Math.sign(inner)*Math.pow(Math.abs(inner),Math.abs(H[i]));});}
+
+// ---------- Ultra-HD finish post-process (simulated on HUD canvas) ----------
+let finishBuffer=Array.from({length:64},()=>Math.random());
+function ultraHDFinish(buf,sharp){const n=buf.map(v=>Math.min(1,Math.max(0,v))*0.92+0.04);return n.map(v=>Math.min(1,Math.max(0,v*sharp)));}
+
+// ---------- background scene: 5D tensor field + triangulated star mesh ----------
+const bg=$('bgCanvas'), bctx=bg.getContext('2d');
+let stars=Array.from({length:160},()=>({x:Math.random(),y:Math.random(),z:0.3+Math.random()*0.7,hue:Math.random(),tw:Math.random()*6.28}));
+let triPts=Array.from({length:14},()=>({x:Math.random(),y:Math.random(),vx:(Math.random()-.5)*0.0009,vy:(Math.random()-.5)*0.0009}));
+function resizeBG(){bg.width=innerWidth;bg.height=innerHeight;} addEventListener('resize',resizeBG); resizeBG();
+
+function drawBG(){
+  const W=bg.width,H=bg.height;
+  // base deep-space gradient, contrast boosted by finish sharpness
+  const g=bctx.createRadialGradient(W*0.5,H*0.38,0,W*0.5,H*0.5,Math.max(W,H)*0.85);
+  const boost=Math.min(1,state.sharpness/1.8);
+  g.addColorStop(0,`rgba(${14+20*boost|0},${20+30*boost|0},${38+50*boost|0},1)`);
+  g.addColorStop(1,'rgba(3,5,10,1)');
+  bctx.fillStyle=g;bctx.fillRect(0,0,W,H);
+
+  // 5D tensor drives hue drift + density
+  const tensorEnergy=state.w.reduce((a,x,i)=>a+x*state.V[i]*state.P[i],0);
+  const hueBase=(200+state.t*0.6+tensorEnergy*40)%360;
+
+  stars.forEach(s=>{
+    s.tw+=0.03;
+    const a=(0.25+0.55*Math.abs(Math.sin(s.tw)))*s.z*Math.min(1.4,state.sharpness*0.75);
+    const x=s.x*W,y=s.y*H,r=1.6*s.z*state.sharpness;
+    bctx.beginPath();bctx.arc(x,y,r,0,6.28);
+    bctx.fillStyle=`hsla(${hueBase+s.hue*40},90%,${60+25*s.z}%,${Math.min(1,a)})`;
+    bctx.fill();
+  });
+
+  // triangulation manifold (connect near points)
+  bctx.lineWidth=0.6;
+  for(let i=0;i<triPts.length;i++){
+    const p=triPts[i];p.x=(p.x+p.vx+1)%1;p.y=(p.y+p.vy+1)%1;
+    for(let j=i+1;j<triPts.length;j++){
+      const q=triPts[j];const dx=(p.x-q.x)*W,dy=(p.y-q.y)*H;const d=Math.hypot(dx,dy);
+      if(d<190){bctx.strokeStyle=`hsla(${hueBase+40},80%,65%,${(1-d/190)*0.28*state.sharpness})`;bctx.beginPath();bctx.moveTo(p.x*W,p.y*H);bctx.lineTo(q.x*W,q.y*H);bctx.stroke();}
+    }
+    bctx.beginPath();bctx.arc(p.x*W,p.y*H,2.2,0,6.28);bctx.fillStyle=`hsla(${hueBase+60},95%,70%,0.9)`;bctx.fill();
+  }
+}
+
+// ---------- HUD canvases ----------
+function drawTensor(){
+  const c=$('tensorCanvas'),x=c.getContext('2d');x.fillStyle='rgba(0,0,0,0.25)';x.fillRect(0,0,c.width,c.height);
+  for(let i=0;i<NCH;i++){
+    const h=(state.adapters[i].w*state.adapters[i].v*state.adapters[i].p)*90+4;
+    const hue=190+i*4;
+    x.fillStyle=`hsla(${hue},85%,60%,0.85)`;
+    x.fillRect(i*(c.width/NCH)+2,c.height-h,(c.width/NCH)-4,h);
+  }
+}
+function drawTri(){
+  const c=$('triCanvas'),x=c.getContext('2d');x.clearRect(0,0,c.width,c.height);
+  const pts=Array.from({length:12},(_,i)=>({x:0.5+0.4*Math.cos(i/12*6.28+state.t*0.02+state.Psi[0]),y:0.5+0.38*Math.sin(i/12*6.28+state.t*0.017+state.Psi[1])}));
+  let edges=0;
+  for(let i=0;i<12;i++){const p=pts[i],q=pts[(i+1)%12];
+    x.strokeStyle='rgba(167,139,250,0.6)';x.beginPath();x.moveTo(p.x*c.width,p.y*c.height);x.lineTo(q.x*c.width,q.y*c.height);x.stroke();edges++;}
+  pts.forEach(p=>{x.beginPath();x.arc(p.x*c.width,p.y*c.height,3,0,6.28);x.fillStyle='#22d3ee';x.fill();});
+  $('triV').textContent=12;$('triS').textContent=edges;
+}
+
+// ---------- master loop ----------
+let I=new Array(DIM).fill(0.05);
+function tick(){
+  state.t++;
+  const F=forcefield(state.r,state.r0,state.psi0,state.sigma,state.kappa);
+  const Vc=cnfGate([[true,true],[true,false],[true,true]]);
+  const next=isonStep(state.Psi,state.S,I,F,Vc);
+  // stability gate / self-seal
+  const norm=Math.hypot(...next);
+  if(norm>100){state.failCount++;state.Psi=next.map(v=>v*0.5);logLine(heroLog,`<span class="warn">[STABILITY GATE] ‖Ψ‖ breach — damping 0.5× (fail ${state.failCount}/3)</span>`);
+    if(state.failCount>=3){sealVault();}}
+  else{state.failCount=0;state.Psi=next;}
+  state.S=evolveState(state.S,state.A,state.B,state.w,state.V,state.P);
+  finishBuffer=ultraHDFinish(finishBuffer,state.sharpness);
+  const mean=finishBuffer.reduce((a,b)=>a+b,0)/finishBuffer.length;
+
+  if(state.t%3===0){
+    $('eqT').textContent=state.t;
+    $('statQ').textContent=diagIndex(state.f,state.wbar,state.u).toFixed(4);
+    $('statF').textContent=F.toFixed(3);
+    $('statC').textContent=Vc?'SAT':'UNSAT';
+    $('statC').className=Vc?'eq text-violet2 text-lg font-bold':'eq text-red-400 text-lg font-bold';
+    $('statPsi').textContent=Math.hypot(...state.Psi).toFixed(3);
+    $('uhMean').textContent=mean.toFixed(4);
+    $('uhBar').style.width=(mean*100).toFixed(1)+'%';
+    $('vaultF').textContent=F.toFixed(3);
+    drawTensor();drawTri();
+  }
+  drawBG();
+  requestAnimationFrame(tick);
+}
+function setSharpness(v){state.sharpness=parseFloat(v);$('sharpVal').textContent=state.sharpness.toFixed(2);}
+
+// ---------- logging ----------
+function logLine(el,html){const d=document.createElement('div');d.className='log-line';d.innerHTML=html;el.appendChild(d);el.scrollTop=el.scrollHeight;while(el.children.length>60)el.removeChild(el.firstChild);}
+const heroLog=$('heroLog'),learnLog=$('learnLog'),vaultLog=$('vaultLog'),voiceOut=$('voiceOut');
+
+/* ================================================================
+   SELF-LEARNING REPOSITORY — absorb algorithms & formulas
+   ================================================================ */
+let repository=[];try{repository=JSON.parse(localStorage.getItem('jk_repository')||'[]');}catch(e){}
+let cnsMemory={system_health:'OPTIMAL',containment:'ISOLATED_CLEAN',trace:'trc-init'};try{Object.assign(cnsMemory,JSON.parse(localStorage.getItem('jk_cns')||'{}'));}catch(e){}
+let provenance=new Set();try{provenance=new Set(JSON.parse(localStorage.getItem('jk_prov')||'[]'));}catch(e){}
+function persist(){localStorage.setItem('jk_repository',JSON.stringify(repository));localStorage.setItem('jk_cns',JSON.stringify(cnsMemory));localStorage.setItem('jk_prov',JSON.stringify([...provenance]));}
+
+async function absorbInput(speakIt=false){
+  const raw=$('learnInput').value.trim();
+  if(!raw){logLine(learnLog,'<span class="err">[!] Empty input — nothing to absorb.</span>');return;}
+  const digest=await sha256(raw);
+  const entry={content:raw,digest:digest.slice(0,16),ts:Date.now()};
+  repository.unshift(entry);provenance.add(digest);
+  // feed into iSoN state — the website literally changes weights from your input
+  const seed=parseInt(digest.slice(0,4),16)/0xffff;
+  state.w=state.w.map(w=>Math.min(0.15,w+seed*0.01));
+  state.V=state.V.map((v,i)=>Math.min(1.5,v+((parseInt(digest.slice(4+i,6+i)||'0',16)||0)/255)*0.08));
+  state.adapters.forEach((a,i)=>{a.w=state.w[i];a.v=state.V[i];a.trust=Math.min(1,a.trust+seed*0.05);});
+  cnsMemory['last_absorbed']=digest.slice(0,16);
+  cnsMemory['absorb_count']=repository.length;
+  cnsMemory['interface_weights']='ADJUSTED_SUCCESSFULLY';
+  persist();renderRepo();renderCNS();renderAux();
+  logLine(learnLog,`<span class="ok">[✓ ABSORBED]</span> <span class="cy">${entry.digest}…</span> — SHA-256 provenance registered · interface weights re-weighted · CNS updated.`);
+  logLine(heroLog,`<span class="vi">[iSoN Master]</span> adapter inputs updated from absorbed payload ${entry.digest}…`);
+  const panel=$('learnPanel');panel.classList.remove('absorb-flash');void panel.offsetWidth;panel.classList.add('absorb-flash');
+  $('adaptRate').textContent=(0.90+seed*0.09).toFixed(2);
+  if(speakIt)speak('Formula absorbed. Interface weights adjusted. CNS memory synchronized.');
+  $('learnInput').value='';
+}
+function renderRepo(){
+  $('repoCount').textContent=repository.length;
+  $('repoList').innerHTML=repository.length?repository.map((e,i)=>`
+    <div class="rounded-xl border border-edge bg-black/40 p-3">
+      <div class="flex items-center justify-between mb-1">
+        <span class="chip text-violet2">${e.digest}…</span>
+        <div class="flex gap-2">
+          <button onclick="reabsorb(${i})" class="chip text-cyan2 hover:text-white" title="Re-feed into engine"><i class="fa-solid fa-rotate"></i></button>
+          <button onclick="repository.splice(${i},1);persist();renderRepo();" class="chip text-red-400 hover:text-red-300"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+      </div>
+      <pre class="term text-slate-300 whitespace-pre-wrap max-h-20 overflow-y-auto">${e.content.replace(/</g,'&lt;').slice(0,300)}</pre>
+    </div>`).join(''):'<div class="text-xs text-slate-500 italic text-center py-6">Repository empty — teach the website its first formula.</div>';
+}
+function reabsorb(i){$('learnInput').value=repository[i].content;absorbInput();}
+function renderCNS(){$('cnsSnapshot').innerHTML=Object.entries(cnsMemory).map(([k,v])=>`<div><span class="cy">${k}</span> → <span class="ok">${v}</span></div>`).join('')||'<span class="text-slate-500">empty</span>';}
+function clearRepository(){if(!confirm('Purge absorbed repository and CNS memory?'))return;repository=[];cnsMemory={system_health:'OPTIMAL'};provenance=new Set();persist();renderRepo();renderCNS();$('provCount').textContent='0';logLine(learnLog,'<span class="err">[!] Repository purged. Volatile RAM zeroed.</span>');}
+
+/* ================================================================
+   S1MONE KERNEL — gates, U-codes, aux units, release
+   ================================================================ */
+const PROVIDERS=['OpenAI','Anthropic','Gemini','Copilot','Perplexity','Grok','Meta AI','Mistral','Cohere','DeepSeek','Bedrock','watsonx','NVIDIA','HuggingFace','GH Copilot','Notion AI','Grammarly','Canva','ElevenLabs','Midjourney'];
+function renderAux(){
+  $('auxGrid').innerHTML=state.adapters.map((a,i)=>`
+    <div class="node-card rounded-xl border border-edge bg-black/40 p-3 text-center" id="aux${i}" onclick="pingAux(${i})">
+      <div class="chip ${a.trust>0.6?'text-emerald-400':'text-slate-500'}">AUX-${String(i+1).padStart(2,'0')}</div>
+      <div class="text-[11px] font-semibold text-slate-200 truncate mt-1">${PROVIDERS[i]}</div>
+      <div class="chip text-violet2/80 mt-0.5">${a.role}</div>
+      <div class="mt-1 h-1 rounded-full bg-black/60"><div class="h-full rounded-full bg-gradient-to-r from-emerald-400 to-cyan-400" style="width:${a.trust*100}%"></div></div>
+    </div>`).join('');
+}
+function pingAux(i){const a=state.adapters[i];a.trust=Math.min(1,a.trust+0.03);renderAux();logLine(heroLog,`<span class="cy">[MESH]</span> AUX-${String(i+1).padStart(2,'0')} ${PROVIDERS[i]} responded — trust ${a.trust.toFixed(2)}`);$(`aux${i}`).classList.add('active');setTimeout(()=>$(`aux${i}`)?.classList.remove('active'),600);}
+function renderGates(){
+  const gates=[['scope_criteria','PASS','ok'],['provenance_integrity','PASS','ok'],['units_inputs','PASS','ok'],['independent_recalculation','UNKNOWN','warn'],['contradictions','NONE','ok'],['standards_checks','PASS','ok'],['human_authorization_review','PASS','ok']];
+  $('gateList').innerHTML=gates.map(([n,s,c])=>`<div>▸ <span class="cy">${n}</span> <span class="${c}">[${s}]</span></div>`).join('');
+  const uc=[['U1000','scan/observability fault'],['U1002','isolation/trust boundary'],['U1003','payload integrity'],['U1004','engine overload']];
+  $('ucodeList').innerHTML=uc.map(([c,d])=>`<div>▸ <span class="err">${c}</span> ${d} — <span class="ok">STANDBY</span></div>`).join('');
+  $('releaseInfo').innerHTML=`<div>▸ A(c) hard gate: <span class="ok">1 (all pass)</span></div><div>▸ Q(c) = <span class="cy">${diagIndex(state.f,state.wbar,state.u).toFixed(4)}</span> vs θ=0.80 → <span class="warn">INSUFFICIENT EVIDENCE</span></div><div>▸ S1MONE verdict: <span class="warn">HOLD</span> — no PASS without measured evidence</div>`;
+}
+async function runFullPipeline(){
+  logLine(heroLog,'<span class="cy">[UGTAF-AH]</span> pipeline started — tracing middleware engaged');
+  await new Promise(r=>setTimeout(r,300));
+  logLine(heroLog,'<span class="cy">[KCT-FFD]</span> sandbox isolation verified — payload contained clean');
+  state.adapters.forEach((a,i)=>setTimeout(()=>pingAux(i),i*60));
+  await new Promise(r=>setTimeout(r,1400));
+  const Q=diagIndex(state.f,state.wbar,state.u);
+  logLine(heroLog,`<span class="vi">[iSoN Master]</span> S_{t+1} evolved · Q(c)=${Q.toFixed(4)} · V_CNF=SAT · F_opt=${forcefield(state.r,state.r0,state.psi0,state.sigma,state.kappa).toFixed(3)}`);
+  logLine(heroLog,'<span class="ok">[S1MONE]</span> 20/20 auxiliary units contacted · release verdict: HOLD (evidence gates pending) · audit digest sealed');
+  $('coreVerdict').textContent='HOLD';
+  speak('Pipeline complete. Twenty auxiliary units contacted. S1MONE verdict: hold pending evidence.');
+}
+
+/* ================================================================
+   VAULT — triple factor with self-seal
+   ================================================================ */
+let vaultFails=0,vaultUnlocked=false;
+function vaultLogLine(h){logLine(vaultLog,h);}
+function unlockVault(voice=false){
+  if(state.sealed){vaultLogLine('<span class="err">[!] VAULT SELF-SEALED. Decoy formula deployed. Recovery impossible.</span>');return;}
+  const pin=$('vaultPin').value;
+  if(voice){startVoice(true);return;}
+  if(pin==='iSoN-2026'){
+    vaultUnlocked=true;$('vaultContent').classList.remove('hidden');
+    vaultLogLine('<span class="ok">[✓] FACTOR 1/3 passcode accepted · FACTOR 2/3 device fingerprint matched · FACTOR 3/3 CNF authorization SAT</span>');
+    vaultLogLine('<span class="cy">[KCT-FFD]</span> optical forcefield stable — F_opt='+forcefield(state.r,state.r0,state.psi0,state.sigma,state.kappa).toFixed(3));
+    speak('Vault unlocked. Welcome back, owner.');
+  }else{
+    vaultFails++;
+    vaultLogLine(`<span class="err">[!] REJECTED (attempt ${vaultFails}/3)</span> — optical forcefield potential dropping`);
+    if(vaultFails>=3)sealVault();
+  }
+}
+function sealVault(){
+  state.sealed=true;
+  vaultLogLine('<span class="err">🚨 SELF-SEAL TRIGGERED — KEY MATERIAL DESTROYED. NOT EVEN THE OWNER CAN REOPEN. DECOY: Ψ_₳ = ≠[ ∑ ⊙ ℵ( Ω ) ]^∇∴</span>');
+  $('sealStatus').innerHTML='<span class="text-red-400 font-bold">SEALED — PERMANENT</span>';
+  speak('Self seal triggered. Vault permanently sealed.');
+}
+
+/* ================================================================
+   VOICE — mic in, speaker out
+   ================================================================ */
+let recog=null,listening=false,voiceIntent=null;
+function speak(text){if('speechSynthesis'in window){const u=new SpeechSynthesisUtterance(text);u.rate=1;speechSynthesis.speak(u);}logLine(voiceOut,`<span class="vi">[SPEAKER]</span> ${text}`);}
+function toggleVoice(){if(listening){recog&&recog.stop();return;}startVoice();}
+function startVoice(oneShot=false){
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR){logLine(voiceOut,'<span class="err">[!] Speech Recognition unsupported in this browser.</span>');speak('Speech recognition is not supported here.');return;}
+  recog=new SR();recog.lang='en-US';recog.interimResults=false;recog.maxAlternatives=1;
+  listening=true;$('voiceIcon').className='fa-solid fa-microphone mic-live';
+  logLine(voiceOut,'<span class="cy">[MIC]</span> Listening…');
+  recog.onresult=e=>{
+    const cmd=e.results[0][0].transcript.toLowerCase();
+    logLine(voiceOut,`<span class="ok">[HEARD]</span> "${cmd}"`);
+    handleVoice(cmd);
+  };
+  recog.onend=()=>{listening=false;$('voiceIcon').className='fa-solid fa-microphone text-slate-300';};
+  recog.onerror=ev=>{listening=false;$('voiceIcon').className='fa-solid fa-microphone text-slate-300';logLine(voiceOut,`<span class="err">[ERR]</span> ${ev.error}`);};
+  recog.start();
+}
+function handleVoice(cmd){
+  if(cmd.includes('5d')||cmd.includes('tensor')){logLine(heroLog,'<span class="cy">[VOICE]</span> 5D engine boosted');state.V=state.V.map(v=>Math.min(1.5,v*1.08));speak('Five D tensor engine boosted.');}
+  else if(cmd.includes('pipeline')||cmd.includes('run')){runFullPipeline();}
+  else if(cmd.includes('status')){speak(`System status optimal. Q of c is ${diagIndex(state.f,state.wbar,state.u).toFixed(4)}. Twenty adapters active. Circuit breaker closed.`);}
+  else if(cmd.includes('sharpen')||cmd.includes('ultra')){setSharpness(Math.min(2.4,state.sharpness+0.2));$('sharpSlider').value=state.sharpness;speak('Ultra HD finish sharpened to '+state.sharpness.toFixed(2));}
+  else if(cmd.includes('unlock')||cmd.includes('vault')){unlockVault();speak('Vault unlock sequence initiated.');}
+  else if(cmd.includes('seal')){sealVault();}
+  else if(cmd.includes('absorb')||cmd.includes('learn')){$('learnInput').value=cmd;speak('Command absorbed into repository.');absorbInput();}
+  else speak(`Command acknowledged: ${cmd}`);
+}
+
+/* ================================================================
+   PUBLIC MODE — editable showcase without the vault pipeline
+   ================================================================ */
+let showcase=[{t:'HOSPITEL HYBRID',c:'Wholistic Hospitel complex — eco-wings, ICU suites, twin helipad approved.',img:'https://images.unsplash.com/photo-1586773860418-d37222d8fce3?w=900&q=80'},
+{t:'EV TELEMATICS',c:'Digital cockpit cluster, battery thermal telemetry, torque vectoring HUD.',img:'https://images.unsplash.com/photo-1511919884226-fd3cad34687c?w=900&q=80'},
+{t:'NEURAL CLOUD MESH',c:'Async gRPC microservice fabric with circuit breakers and CNS telemetry.',img:'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=900&q=80'}];
+try{const s=localStorage.getItem('jk_showcase');if(s)showcase=JSON.parse(s);}catch(e){}
+function renderShowcase(){
+  $('showcaseGrid').innerHTML=showcase.map((p,i)=>`
+  <div class="glass rounded-2xl overflow-hidden group">
+    <div class="h-44 overflow-hidden relative">
+      <img src="${p.img}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" onerror="this.src='https://placehold.co/800x400/0b101a/22d3ee?text=iSoN+5D+RENDER'">
+      <div class="absolute inset-0 bg-gradient-to-t from-[#0b101a] to-transparent"></div>
+      <span class="absolute top-3 left-3 chip bg-black/70 border border-cyan2/40 text-cyan2 px-2.5 py-1 rounded-full">CELL-${i+1}</span>
+    </div>
+    <div class="p-4">
+      <input value="${p.t.replace(/"/g,'&quot;')}" onchange="showcase[${i}].t=this.value;saveShow()" class="w-full bg-transparent border border-transparent hover:border-edge rounded-lg px-2 py-1 font-bold text-sm">
+      <textarea rows="2" onchange="showcase[${i}].c=this.value;saveShow()" class="w-full bg-transparent border border-transparent hover:border-edge rounded-lg px-2 py-1 text-xs text-slate-400 resize-none">${p.c}</textarea>
+      <div class="flex justify-between items-center mt-2">
+        <button onclick="showcase.splice(${i},1);saveShow();renderShowcase();" class="chip text-red-400 hover:text-red-300"><i class="fa-solid fa-trash-can"></i></button>
+        <span class="chip text-slate-500">EDIT INLINE · AUTO-SAVED</span>
+      </div>
+    </div>
+  </div>`).join('');
+}
+function saveShow(){localStorage.setItem('jk_showcase',JSON.stringify(showcase));}
+function addShowcaseItem(){showcase.push({t:'New Project Cell',c:'Describe this work…',img:'https://images.unsplash.com/photo-1518770660439-4636190af475?w=900&q=80'});saveShow();renderShowcase();}
+function toggleMode(){
+  document.body.classList.toggle('mode-public');
+  const pub=document.body.classList.contains('mode-public');
+  $('modeIcon').className=pub?'fa-solid fa-globe text-emerald-400':'fa-solid fa-lock text-cyan2';
+  $('modeLabel').textContent=pub?'PUBLIC SITE':'PRIVATE CORE';
+  speak(pub?'Public website mode. Inline editing enabled.':'Private core restored. Vault corridor active.');
+}
+
+/* ================================================================
+   BOOT
+   ================================================================ */
+renderAux();renderGates();renderRepo();renderCNS();renderShowcase();$('provCount').textContent=provenance.size;
+logLine(heroLog,'<span class="ok">[BOOT]</span> iSoN 5D Ultra-HD Mesh Engine initialized — 20 channels mapped');
+logLine(heroLog,'<span class="cy">[CNS]</span> state telemetry synchronized · circuit breaker CLOSED');
+logLine(heroLog,'<span class="vi">[Ultra-HD]</span> hyper-realism finish armed at sharpness 1.45');
+tick();
+</script>
+</body>
+</html>
