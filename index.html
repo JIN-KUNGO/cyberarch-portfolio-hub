@@ -1202,3 +1202,568 @@ tick();
 </script>
 </body>
 </html>
+pip install numpy
+pip install z3-solver
+python unified_ison_framework.py
+""" Unified iSoN Framework Verify • Prune • Evolve • Stabilize • Cite • Measure Dependencies: pip install numpy Optional formal verification: pip install z3-solver This is a reference implementation. Safety/admissibility decisions are only as reliable as the supplied state observations, thresholds, and model assumptions. """
+
+from __future__ import annotations
+
+import heapq
+import math
+import time
+from dataclasses import dataclass, asdict
+from datetime import datetime, timezone
+from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple
+
+import numpy as np
+
+try:
+    from z3 import And, Bool, Real, Solver, sat, unsat
+    Z3_AVAILABLE = True
+except ImportError:
+    Z3_AVAILABLE = False
+
+
+# ---------------------------------------------------------------------------
+# Configuration
+# ---------------------------------------------------------------------------
+
+STATE_DIM = 4
+NUM_CHANNELS = 20
+DEFAULT_ALPHA = 1.0
+DEFAULT_EPSILON = 1e-6
+DEFAULT_BOUND_MAX = 100.0
+DEFAULT_MAX_FAILURES = 3
+
+
+# ---------------------------------------------------------------------------
+# 1. Formal admissibility gate and optional SMT verification
+# ---------------------------------------------------------------------------
+
+@dataclass(frozen=True)
+class GateResult:
+    admissible: bool
+    reasons: Tuple[str, ...]
+
+
+class iSoNGateVerifier:
+    """ R(c) = 1 iff A(c)=1 and Q(c)>=theta and U(c)<=tau and C(c)=1. Expected state fields: A: availability bit (0/1) Q: quality score U: uncertainty score C: release/authorization bit (0/1) """
+    def __init__(self, theta: float = 0.85, tau: float = 15.0):
+        if not math.isfinite(theta) or not math.isfinite(tau):
+            raise ValueError("Gate thresholds must be finite.")
+        self.theta = float(theta)
+        self.tau = float(tau)
+
+    def evaluate_detail(self, state: Optional[dict]) -> GateResult:
+        if not isinstance(state, dict):
+            return GateResult(False, ("missing or invalid state",))
+        reasons = []
+        a = state.get("A", 0)
+        q = state.get("Q", float("-inf"))
+        u = state.get("U", float("inf"))
+        c = state.get("C", 0)
+
+        if a != 1:
+            reasons.append("A must equal 1")
+        try:
+            q = float(q)
+            if not math.isfinite(q) or q < self.theta:
+                reasons.append(f"Q must be finite and >= {self.theta}")
+        except (TypeError, ValueError):
+            reasons.append("Q must be numeric")
+        try:
+            u = float(u)
+            if not math.isfinite(u) or u > self.tau:
+                reasons.append(f"U must be finite and <= {self.tau}")
+        except (TypeError, ValueError):
+            reasons.append("U must be numeric")
+        if c != 1:
+            reasons.append("C must equal 1")
+        return GateResult(not reasons, tuple(reasons))
+
+    def evaluate(self, state: Optional[dict]) -> bool:
+        return self.evaluate_detail(state).admissible
+
+    def verify_with_smt(self, node_id: str, state: dict) -> str:
+        """Check whether the observed values satisfy the gate, if Z3 is installed."""
+        local = self.evaluate_detail(state)
+        if not Z3_AVAILABLE:
+            return (
+                f"Node {node_id}: {'PASS' if local.admissible else 'FAIL'} "
+                "(local check; Z3 not installed)"
+            )
+
+        # Use unique symbol names to avoid accidental cross-node symbol reuse.
+        suffix = "".join(ch if ch.isalnum() else "_" for ch in str(node_id))
+        solver = Solver()
+        a = Bool(f"A_{suffix}")
+        q = Real(f"Q_{suffix}")
+        u = Real(f"U_{suffix}")
+        c = Bool(f"C_{suffix}")
+
+        try:
+            q_value = float(state.get("Q", float("nan")))
+            u_value = float(state.get("U", float("nan")))
+            if not (math.isfinite(q_value) and math.isfinite(u_value)):
+                return f"Node {node_id}: FAIL (non-finite or missing Q/U)"
+            solver.add(a == (state.get("A") == 1))
+            solver.add(q == q_value)
+            solver.add(u == u_value)
+            solver.add(c == (state.get("C") == 1))
+            solver.add(And(a, q >= self.theta, u <= self.tau, c))
+        except (TypeError, ValueError):
+            return f"Node {node_id}: FAIL (invalid state values)"
+
+        result = solver.check()
+        if result == sat:
+            return f"Node {node_id}: SMT SAT — admissibility constraints satisfied."
+        if result == unsat:
+            return f"Node {node_id}: SMT UNSAT — observed state fails the gate."
+        return f"Node {node_id}: SMT UNKNOWN — solver could not decide."
+
+
+# ---------------------------------------------------------------------------
+# 2. Admissibility-aware Dijkstra routing
+# ---------------------------------------------------------------------------
+
+class iSoNEnhancedRouter:
+    """ Graph format: {"A": [("B", 2.0), ("C", 1.0)], ...} Edge weights must be finite and non-negative. Inadmissible neighbors are rejected before priority-queue insertion. """
+    def __init__( self, graph: dict, component_states: dict, theta: float = 0.85, tau: float = 15.0, ):
+        self.graph = graph
+        self.component_states = component_states
+        self.verifier = iSoNGateVerifier(theta, tau)
+
+    def compute_shortest_path(self, start: str, destination: str) -> dict:
+        began = time.perf_counter()
+
+        if start not in self.graph:
+            raise ValueError(f"Unknown source node: {start}")
+        if destination not in self.graph:
+            raise ValueError(f"Unknown destination node: {destination}")
+        if not self.verifier.evaluate(self.component_states.get(start)):
+            raise ValueError(f"Source node {start!r} is inadmissible.")
+
+        distances = {node: math.inf for node in self.graph}
+        previous = {node: None for node in self.graph}
+        distances[start] = 0.0
+        queue = [(0.0, start)]
+        visited = set()
+        pruned = set()
+
+        while queue:
+            current_distance, current = heapq.heappop(queue)
+            if current in visited:
+                continue
+            if current_distance != distances[current]:
+                continue
+            visited.add(current)
+
+            if current == destination:
+                break
+
+            for neighbor, weight in self.graph.get(current, []):
+                if neighbor not in self.graph:
+                    raise ValueError(
+                        f"Edge from {current!r} references unknown node {neighbor!r}."
+                    )
+                try:
+                    weight = float(weight)
+                except (TypeError, ValueError):
+                    raise ValueError(f"Invalid edge weight on {current!r}->{neighbor!r}.")
+                if not math.isfinite(weight) or weight < 0:
+                    raise ValueError("Dijkstra requires finite, non-negative edge weights.")
+                if neighbor in visited:
+                    continue
+                if not self.verifier.evaluate(self.component_states.get(neighbor)):
+                    pruned.add(neighbor)
+                    continue
+
+                candidate = current_distance + weight
+                if candidate < distances[neighbor]:
+                    distances[neighbor] = candidate
+                    previous[neighbor] = current
+                    heapq.heappush(queue, (candidate, neighbor))
+
+        path = []
+        if math.isfinite(distances[destination]):
+            cursor = destination
+            while cursor is not None:
+                path.append(cursor)
+                cursor = previous[cursor]
+            path.reverse()
+
+        return {
+            "path": path,
+            "cost": distances[destination],
+            "reachable": bool(path),
+            "pruned_nodes": sorted(pruned),
+            "visited_nodes": sorted(visited),
+            "execution_ms": (time.perf_counter() - began) * 1000.0,
+        }
+
+
+# ---------------------------------------------------------------------------
+# 3. iSoN master-formula components
+# ---------------------------------------------------------------------------
+
+def state_evolution( S_t: np.ndarray, A: np.ndarray, B: np.ndarray, w: np.ndarray, V: np.ndarray, P: np.ndarray, ) -> np.ndarray:
+    """S_(t+1) = A @ S_t + B * sum_i(w_i * V_i * P_i), for 20 channels."""
+    S_t, A, B = np.asarray(S_t, float), np.asarray(A, float), np.asarray(B, float)
+    w, V, P = np.asarray(w, float), np.asarray(V, float), np.asarray(P, float)
+    if w.size < NUM_CHANNELS or V.size < NUM_CHANNELS or P.size < NUM_CHANNELS:
+        raise ValueError(f"w, V, and P must each contain at least {NUM_CHANNELS} values.")
+    if A.shape != (S_t.size, S_t.size) or B.shape != S_t.shape:
+        raise ValueError("A and B dimensions must match the state vector.")
+    channel_sum = np.sum(w[:NUM_CHANNELS] * V[:NUM_CHANNELS] * P[:NUM_CHANNELS])
+    result = A @ S_t + B * channel_sum
+    if not np.all(np.isfinite(result)):
+        raise FloatingPointError("State evolution produced non-finite values.")
+    return result
+
+
+def diagnostic_index( fidelities: Sequence[float], weights: Sequence[float], uncertainty: float, ) -> float:
+    """Q(c) = product_j clamp(f_j, 0, 1) ** normalized_weight_j * (1-u)."""
+    if len(fidelities) != len(weights) or not fidelities:
+        raise ValueError("fidelities and weights must have equal, non-zero lengths.")
+    f = np.clip(np.asarray(fidelities, float), 1e-12, 1.0)
+    weights_array = np.asarray(weights, float)
+    if not np.all(np.isfinite(f)) or not np.all(np.isfinite(weights_array)):
+        raise ValueError("Fidelities and weights must be finite.")
+    if np.any(weights_array < 0) or weights_array.sum() <= 0:
+        raise ValueError("Weights must be non-negative with a positive sum.")
+    normalized = weights_array / weights_array.sum()
+    u = float(uncertainty)
+    if not math.isfinite(u):
+        raise ValueError("Uncertainty must be finite.")
+    u = min(1.0, max(0.0, u))
+    return float(np.exp(np.sum(normalized * np.log(f))) * (1.0 - u))
+
+
+def optical_forcefield( r: np.ndarray, r_0: np.ndarray, psi_0: float, sigma: float, kappa: float, ) -> float:
+    """F_opt = psi_0 * exp(-||r-r0||^2/(2*sigma^2)) * (1-kappa), if kappa<0.85."""
+    r, r_0 = np.asarray(r, float), np.asarray(r_0, float)
+    if r.shape != r_0.shape:
+        raise ValueError("r and r_0 must have the same shape.")
+    if not math.isfinite(float(sigma)) or sigma <= 0:
+        raise ValueError("sigma must be finite and > 0.")
+    if not all(np.all(np.isfinite(x)) for x in (r, r_0)):
+        raise ValueError("Position vectors must be finite.")
+    if kappa >= 0.85:
+        return 0.0
+    distance_sq = float(np.sum((r - r_0) ** 2))
+    return float(psi_0 * math.exp(-distance_sq / (2.0 * sigma ** 2)) * (1.0 - kappa))
+
+
+def cnf_gate(clauses: Sequence[Sequence[bool]]) -> int:
+    """Return 1 iff every OR-clause has at least one true literal."""
+    if not clauses:
+        return 0
+    return int(all(any(clause) for clause in clauses))
+
+
+def cns_kernel( Psi: np.ndarray, I: np.ndarray, W1: np.ndarray, W2: np.ndarray, beta: float, ) -> np.ndarray:
+    """H = tanh(W1 @ Psi + W2 @ I + beta * sin(Psi))."""
+    Psi, I = np.asarray(Psi, float), np.asarray(I, float)
+    W1, W2 = np.asarray(W1, float), np.asarray(W2, float)
+    if Psi.shape != I.shape:
+        raise ValueError("Psi and I must have the same shape.")
+    if W1.shape != (Psi.size, Psi.size) or W2.shape != (Psi.size, I.size):
+        raise ValueError("W1 and W2 must be square/compatible with Psi and I.")
+    return np.tanh(W1 @ Psi + W2 @ I + float(beta) * np.sin(Psi))
+
+
+def ugtaf_pipeline(value: Any, middleware: Sequence[Callable[[Any], Any]]) -> Any:
+    """Apply middleware in sequence: M_n(...M_2(M_1(value)))."""
+    result = value
+    for middleware_function in middleware:
+        result = middleware_function(result)
+    return result
+
+
+def ison_master_step( Psi: np.ndarray, S_t: np.ndarray, I: np.ndarray, A: np.ndarray, B: np.ndarray, w: np.ndarray, V: np.ndarray, P: np.ndarray, fidelities: Sequence[float], fidelity_weights: Sequence[float], uncertainty: float, F_opt: float, V_CNF: int, W1: np.ndarray, W2: np.ndarray, beta: float, alpha: float = DEFAULT_ALPHA, middleware: Optional[Sequence[Callable[[Any], Any]]] = None, ) -> np.ndarray:
+    """ Implements the stated master formula with explicit element-wise operations: Psi_next = Gamma_UGTAF(F_opt * V_CNF * S_next * Q**alpha) ** tanh(...) The exponent is applied element-wise to abs(base), retaining its sign. """
+    Psi = np.asarray(Psi, float)
+    S_next = state_evolution(S_t, A, B, w, V, P)
+    if S_next.shape != Psi.shape:
+        raise ValueError("State vector and Psi must have matching shapes.")
+    q_value = diagnostic_index(fidelities, fidelity_weights, uncertainty)
+    kernel = cns_kernel(Psi, I, W1, W2, beta)
+    base = float(F_opt) * int(bool(V_CNF)) * S_next * (q_value ** float(alpha))
+    # Real-valued signed-power convention for potentially negative base values.
+    # This preserves the actual tanh-derived exponent (including its sign).
+    abs_base = np.abs(base)
+    if np.any((abs_base == 0.0) & (kernel < 0.0)):
+        raise FloatingPointError("Zero base with a negative exponent is undefined.")
+    inner = np.sign(base) * np.power(abs_base, kernel)
+    transformed = ugtaf_pipeline(inner, middleware or [])
+    result = np.asarray(transformed, float)
+    if result.shape != Psi.shape or not np.all(np.isfinite(result)):
+        raise FloatingPointError("Master step produced invalid state output.")
+    return result
+
+
+# ---------------------------------------------------------------------------
+# 4. Stability guard (recoverable; does not claim to destroy keys)
+# ---------------------------------------------------------------------------
+
+class SelfSeal:
+    """Recoverable circuit-breaker: locks after repeated failures; no key handling."""
+    def __init__(self, max_failures: int = DEFAULT_MAX_FAILURES):
+        if max_failures < 1:
+            raise ValueError("max_failures must be >= 1.")
+        self.max_failures = max_failures
+        self.sealed = False
+        self.fail_count = 0
+
+    def register_failure(self) -> bool:
+        if self.sealed:
+            return True
+        self.fail_count += 1
+        if self.fail_count >= self.max_failures:
+            self.sealed = True
+        return self.sealed
+
+    def register_success(self) -> None:
+        if not self.sealed:
+            self.fail_count = 0
+
+    def seal(self) -> None:
+        self.sealed = True
+
+    def is_sealed(self) -> bool:
+        return self.sealed
+
+    def reset(self) -> None:
+        """Explicit manual reset; caller is responsible for authorization."""
+        self.sealed = False
+        self.fail_count = 0
+
+
+# ---------------------------------------------------------------------------
+# 5. Scoring, decomposition, bibliography metadata
+# ---------------------------------------------------------------------------
+
+def ison_score( Psi: np.ndarray, B_star: np.ndarray, rho: Sequence[float], pillar_weights: Sequence[float], tau_essential: float, tau_total: float, uncertainty: float, ) -> float:
+    """ A bounded, interpretable score: robustness * similarity_to_benchmark * efficiency * (1-u) Similarity is 1/(1+relative_error), so higher is better and bounded [0,1]. """
+    Psi, B_star = np.asarray(Psi, float), np.asarray(B_star, float)
+    if Psi.shape != B_star.shape:
+        raise ValueError("Psi and B_star must have the same shape.")
+    if len(rho) != len(pillar_weights) or not rho:
+        raise ValueError("rho and pillar_weights must have equal, non-zero lengths.")
+    rho_arr = np.clip(np.asarray(rho, float), 0.0, 1.0)
+    weights = np.asarray(pillar_weights, float)
+    if np.any(weights < 0) or weights.sum() <= 0:
+        raise ValueError("Pillar weights must be non-negative with positive sum.")
+    weights = weights / weights.sum()
+    robustness = float(np.exp(np.sum(weights * np.log(np.clip(rho_arr, 1e-12, 1.0)))))
+    relative_error = float(np.linalg.norm(Psi - B_star) / (np.linalg.norm(B_star) + 1e-10))
+    similarity = 1.0 / (1.0 + relative_error)
+    total = float(tau_total)
+    efficiency = 0.0 if total <= 0 else min(1.0, max(0.0, float(tau_essential) / total))
+    u = min(1.0, max(0.0, float(uncertainty)))
+    return float(robustness * similarity * efficiency * (1.0 - u))
+
+
+def extract_essential_function(steps: Sequence[dict]) -> List[int]:
+    """Return indices whose impact/cost score is at least the mean score."""
+    if not steps:
+        return []
+    scores = []
+    for index, step in enumerate(steps):
+        impact, cost = float(step["impact"]), float(step["cost"])
+        if not math.isfinite(impact) or not math.isfinite(cost) or cost < 0:
+            raise ValueError("Step impact must be finite and cost finite/non-negative.")
+        scores.append((index, impact / max(cost, 1e-10)))
+    threshold = float(np.mean([score for _, score in scores]))
+    return [index for index, score in scores if score >= threshold]
+
+
+class IEEEtranBibliographyExporter:
+    """Generate BibTeX metadata; caller must verify publication details before citing."""
+@staticmethod
+    def generate_bibtex_entry( key: str, title: str, author: str, year: str, journal: Optional[str] = None, doi: Optional[str] = None, ) -> str:
+        def clean(value: str) -> str:
+            return str(value).replace("{", r"\{").replace("}", r"\}")
+        fields = [
+            f" author = {{{clean(author)}}}",
+            f" title = {{{clean(title)}}}",
+            f" year = {{{clean(year)}}}",
+        ]
+        if journal:
+            fields.append(f" journal = {{{clean(journal)}}}")
+        if doi:
+            fields.append(f" doi = {{{clean(doi)}}}")
+        fields.append(" note = {Generated by the Unified iSoN Framework}")
+        return "@misc{" + clean(key) + ",\n" + ",\n".join(fields) + "\n}"
+
+
+# ---------------------------------------------------------------------------
+# 6. End-to-end framework runner
+# ---------------------------------------------------------------------------
+
+def run_ison( Psi_0: np.ndarray, A: np.ndarray, B: np.ndarray, w: np.ndarray, V: np.ndarray, P: np.ndarray, fidelities: Sequence[float], fidelity_weights: Sequence[float], uncertainty: float, W1: np.ndarray, W2: np.ndarray, beta: float, rho: Sequence[float], pillar_weights: Sequence[float], B_star: np.ndarray, tau_essential: float, tau_total: float, clauses: Sequence[Sequence[bool]], I: np.ndarray, r: np.ndarray, r_0: np.ndarray, psi_0: float, sigma: float, kappa: float, T_max: int = 100, alpha: float = DEFAULT_ALPHA, epsilon: float = DEFAULT_EPSILON, bound_max: float = DEFAULT_BOUND_MAX, max_failures: int = DEFAULT_MAX_FAILURES, middleware: Optional[Sequence[Callable[[Any], Any]]] = None, ) -> dict:
+    if T_max < 1 or epsilon < 0 or bound_max <= 0:
+        raise ValueError("T_max must be >=1, epsilon >=0, and bound_max >0.")
+
+    seal = SelfSeal(max_failures=max_failures)
+    Psi = np.asarray(Psi_0, float).copy()
+    S_t = Psi.copy()
+    history = []
+    status = "COMPLETED"
+    V_CNF = cnf_gate(clauses)
+    F_opt = optical_forcefield(r, r_0, psi_0, sigma, kappa)
+
+    if not V_CNF:
+        return {
+            "status": "BLOCKED_CNF",
+            "Psi_final": Psi,
+            "score": 0.0,
+            "history": [],
+            "iterations": 0,
+            "sealed": False,
+            "reason": "CNF gate rejected the input clauses.",
+        }
+
+    for iteration in range(1, T_max + 1):
+        try:
+            Psi_next = ison_master_step(
+                Psi, S_t, I, A, B, w, V, P,
+                fidelities, fidelity_weights, uncertainty,
+                F_opt, V_CNF, W1, W2, beta, alpha, middleware,
+            )
+        except (ValueError, FloatingPointError, OverflowError) as exc:
+            if seal.register_failure():
+                status = "SEALED"
+                return {
+                    "status": status, "Psi_final": None, "score": 0.0,
+                    "history": history, "iterations": iteration,
+                    "sealed": True, "reason": str(exc),
+                }
+            status = "NUMERICAL_FAILURE"
+            break
+
+        if not np.all(np.isfinite(Psi_next)) or np.linalg.norm(Psi_next) > bound_max:
+            if seal.register_failure():
+                status = "SEALED"
+                return {
+                    "status": status, "Psi_final": None, "score": 0.0,
+                    "history": history, "iterations": iteration,
+                    "sealed": True, "reason": "Repeated numerical bound violations.",
+                }
+            # Dampen the candidate; do not silently treat it as a verified safe state.
+            Psi_next = np.clip(np.nan_to_num(Psi_next), -bound_max, bound_max) * 0.5
+        else:
+            seal.register_success()
+
+        delta = float(np.linalg.norm(Psi_next - Psi))
+        Psi = Psi_next
+        S_t = state_evolution(S_t, A, B, w, V, P)
+        history.append(Psi.copy())
+        if delta < epsilon:
+            break
+
+    score = ison_score(
+        Psi, B_star, rho, pillar_weights, tau_essential, tau_total, uncertainty
+    )
+    return {
+        "status": status,
+        "Psi_final": Psi,
+        "score": score,
+        "history": history,
+        "iterations": len(history),
+        "sealed": seal.is_sealed(),
+        "uncertainty": float(uncertainty),
+        "cnf_passed": bool(V_CNF),
+        "optical_forcefield": float(F_opt),
+    }
+
+
+# ---------------------------------------------------------------------------
+# 7. Runnable demonstration
+# ---------------------------------------------------------------------------
+
+def demo() -> None:
+    print("=" * 68)
+    print("UNIFIED iSoN FRAMEWORK — VERIFY • PRUNE • EVOLVE • CITE")
+    print("UTC timestamp:", datetime.now(timezone.utc).isoformat(timespec="seconds"))
+    print("Z3 available:", Z3_AVAILABLE)
+    print("=" * 68)
+
+    graph = {
+        "Node_A": [("Node_B", 3), ("Node_C", 1)],
+        "Node_B": [("Node_A", 3), ("Node_C", 2), ("Node_D", 4)],
+        "Node_C": [("Node_A", 1), ("Node_B", 2), ("Node_D", 7), ("Node_E", 5)],
+        "Node_D": [("Node_B", 4), ("Node_C", 7), ("Node_E", 2)],
+        "Node_E": [("Node_C", 5), ("Node_D", 2)],
+    }
+    theta, tau = 0.85, 15.0
+    telemetry = {
+        "Node_A": {"A": 1, "Q": 0.96, "U": 5.0, "C": 1},
+        "Node_B": {"A": 1, "Q": 0.91, "U": 10.0, "C": 1},
+        "Node_C": {"A": 1, "Q": 0.89, "U": 8.0, "C": 1},
+        "Node_D": {"A": 0, "Q": 0.60, "U": 30.0, "C": 0},
+        "Node_E": {"A": 1, "Q": 0.94, "U": 6.0, "C": 1},
+    }
+
+    verifier = iSoNGateVerifier(theta, tau)
+    print("\n--- VERIFY: admissibility ---")
+    for node, state in telemetry.items():
+        print(verifier.verify_with_smt(node, state))
+
+    print("\n--- PRUNE: shortest admissible route ---")
+    route = iSoNEnhancedRouter(graph, telemetry, theta, tau).compute_shortest_path(
+        "Node_A", "Node_E"
+    )
+    print("Path:", route["path"] or "No admissible route")
+    print("Cost:", route["cost"])
+    print("Pruned nodes:", route["pruned_nodes"])
+    print(f"Runtime: {route['execution_ms']:.4f} ms")
+
+    print("\n--- EVOLVE: master formula demonstration ---")
+    np.random.seed(42)
+    psi_init = np.random.uniform(-0.1, 0.1, STATE_DIM)
+    A = np.eye(STATE_DIM) * 0.9
+    B = np.ones(STATE_DIM) * 0.1
+    W1 = np.eye(STATE_DIM) * 0.5
+    W2 = np.eye(STATE_DIM) * 0.3
+    w = np.random.uniform(0.01, 0.1, NUM_CHANNELS)
+    V = np.random.uniform(0.5, 1.5, NUM_CHANNELS)
+    P = np.random.uniform(0.5, 1.0, NUM_CHANNELS)
+    I = np.random.uniform(-0.1, 0.1, STATE_DIM)
+
+    result = run_ison(
+        Psi_0=psi_init, A=A, B=B, w=w, V=V, P=P,
+        fidelities=[0.99, 0.97, 0.99, 0.98],
+        fidelity_weights=[0.25, 0.25, 0.25, 0.25],
+        uncertainty=0.02, W1=W1, W2=W2, beta=0.1,
+        rho=[0.9, 0.85, 0.95, 0.88, 0.92],
+        pillar_weights=[0.2] * 5,
+        B_star=np.ones(STATE_DIM) * 0.5,
+        tau_essential=12.5, tau_total=25.0,
+        clauses=[[True, False], [True], [True, True]],
+        I=I, r=np.ones(4), r_0=np.zeros(4),
+        psi_0=1.0, sigma=2.0, kappa=0.03, T_max=100,
+    )
+    print("Status:", result["status"])
+    print("Final Psi:", result["Psi_final"])
+    print(f"iSoN score: {result['score']:.6f}")
+    print("Iterations:", result["iterations"])
+    print("Safety lock engaged:", result["sealed"])
+
+    print("\n--- CITE: BibTeX metadata template ---")
+    print(IEEEtranBibliographyExporter.generate_bibtex_entry(
+        key="iSoN2026Framework",
+        title="The iSoN Framework: Formal Admissibility and Enhanced Routing",
+        author="Aeson Rashied Go",
+        year="2026",
+        # Add journal/DOI only after independently verifying publication details.
+    ))
+    print("\nDEMO COMPLETE")
+
+
+if __name__ == "__main__":
+    demo()
+            python unified_ison_framework.py
+            pip install z3-solver
+            pip install numpy
