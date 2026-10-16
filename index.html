@@ -1,6 +1,475 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>CyberArch | Ultra HD Portfolio Hub</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800;900&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        cyber: {
+                            cyan: '#00ffcc',
+                            blue: '#0077ff',
+                            dark: '#030712',
+                            card: '#0a1422',
+                            accent: '#ff0055'
+                        }
+                    },
+                    fontFamily: {
+                        orbitron: ['Orbitron', 'sans-serif'],
+                        rajdhani: ['Rajdhani', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background-color: #030712;
+            color: #e2e8f0;
+            overflow-x: hidden;
+            touch-action: manipulation;
+        }
+
+        #plexus-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        /* Hyper-Realism Ultra HD Teal Fabric Texture Window Background with 1000% Zoom Support */
+        .window-bg-card {
+            background: linear-gradient(180deg, rgba(3, 8, 16, 0.78) 0%, rgba(3, 7, 18, 0.88) 100%),
+                        url('data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAP//////////////////////////////////////////////////////////////////////////////////////wgALCAABAAEBAREA/8QAFBABAAAAAAAAAAAAAAAAAAAAAP/aAAgBAQABPxA=') center/cover no-repeat,
+                        url('1000001180.jpg') center/cover no-repeat;
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(0, 255, 204, 0.45);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.85), inset 0 0 25px rgba(0, 255, 204, 0.12);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transform-origin: center center;
+        }
+
+        .glass-panel {
+            background: rgba(10, 20, 32, 0.88);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(0, 255, 204, 0.3);
+        }
+
+        ::-webkit-scrollbar {
+            width: 4px;
+            height: 4px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #00ffcc;
+            border-radius: 4px;
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 10px rgba(0, 255, 204, 0.3); }
+            50% { box-shadow: 0 0 25px rgba(0, 255, 204, 0.8); }
+        }
+        .glow-pulse { animation: pulse-glow 3s infinite ease-in-out; }
+
+        .window-gap-calibrated { margin-bottom: 2.5in; }
+        .window-gap-compact { margin-bottom: 2rem; }
+    </style>
+</head>
+<body class="min-h-screen relative select-none pb-24">
+
+    <!-- Canvas Background -->
+    <canvas id="plexus-canvas"></canvas>
+    <div class="fixed inset-0 bg-cyber-dark/60 z-[1] pointer-events-none"></div>
+
+    <!-- Mobile Container -->
+    <main class="relative z-10 max-w-lg mx-auto px-4 pt-6">
+
+        <!-- Top Header Bar -->
+        <header class="glass-panel rounded-2xl p-4 mb-6 flex flex-col gap-3 border-b-2 border-cyber-cyan/50">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-cyber-cyan/10 border border-cyber-cyan/60 flex items-center justify-center text-cyber-cyan glow-pulse">
+                        <i class="fa-solid fa-cube text-xl"></i>
+                    </div>
+                    <div>
+                        <h1 class="font-orbitron font-extrabold text-lg tracking-wider text-white">
+                            CYBER<span class="text-cyber-cyan">ARCH</span>
+                        </h1>
+                        <p class="text-xs text-cyan-400/80 font-medium tracking-wide">ULTRA HD PORTFOLIO HUB</p>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <button onclick="adjustGlobalZoom(1)" title="Quantum Zoom In (Up to 1000%)" class="w-8 h-8 rounded-xl border border-cyber-cyan/40 bg-cyber-cyan/10 text-cyber-cyan text-xs font-semibold flex items-center justify-center active:scale-95 transition-all">
+                        <i class="fa-solid fa-magnifying-glass-plus"></i>
+                    </button>
+                    <button id="toggle-edit-mode" onclick="toggleEditMode()" class="px-3 py-1.5 rounded-xl border border-cyber-cyan/40 bg-cyber-cyan/10 text-cyber-cyan text-xs font-semibold flex items-center gap-2 active:scale-95 transition-all">
+                        <i class="fa-solid fa-sliders"></i>
+                        <span id="edit-mode-status">View Mode</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="flex items-center justify-between pt-2 border-t border-white/10 text-xs text-gray-300">
+                <button onclick="toggleSpacingMode()" class="flex items-center gap-1.5 text-cyan-300">
+                    <i class="fa-solid fa-ruler-vertical text-cyber-cyan"></i>
+                    <span id="spacing-label">Gap: 2.5 Inches</span>
+                </button>
+                <div class="flex items-center gap-2">
+                    <span id="zoom-level-badge" class="text-[10px] font-mono text-cyber-cyan bg-cyan-950/60 px-2 py-0.5 rounded border border-cyber-cyan/30">Zoom: 100%</span>
+                    <button onclick="resetData()" class="text-xs text-red-400 hover:text-red-300">
+                        <i class="fa-solid fa-rotate-left mr-1"></i>Reset
+                    </button>
+                </div>
+                <div class="flex items-center gap-1 text-emerald-400">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+                    <span class="text-[10px] uppercase font-bold">Self-Healing AI</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Navigation Tabs -->
+        <div class="flex bg-cyber-dark/90 backdrop-blur-md p-1.5 rounded-xl border border-white/10 mb-6 gap-1">
+            <button id="nav-portfolio" onclick="switchMainTab('portfolio')" class="flex-1 py-2 rounded-lg font-orbitron text-xs font-bold bg-cyber-cyan text-cyber-dark shadow-lg shadow-cyber-cyan/20">
+                <i class="fa-solid fa-grip-vertical mr-1"></i> WINDOWS
+            </button>
+            <button id="nav-learning" onclick="switchMainTab('learning')" class="flex-1 py-2 rounded-lg font-orbitron text-xs font-bold text-gray-400 hover:text-white">
+                <i class="fa-solid fa-brain mr-1"></i> AI INSIGHTS
+            </button>
+            <button id="nav-editor" onclick="switchMainTab('editor')" class="flex-1 py-2 rounded-lg font-orbitron text-xs font-bold text-gray-400 hover:text-white">
+                <i class="fa-solid fa-pen-to-square mr-1"></i> STUDIO
+            </button>
+        </div>
+
+        <!-- PORTFOLIO WINDOWS TAB -->
+        <section id="tab-portfolio" class="block space-y-8">
+            <div id="windows-list" class="space-y-12"></div>
+        </section>
+
+        <!-- SELF-LEARNING TAB -->
+        <section id="tab-learning" class="hidden space-y-6">
+            <div class="glass-panel rounded-2xl p-5 border-l-4 border-l-cyber-cyan">
+                <h2 class="font-orbitron font-bold text-base text-white mb-2 flex items-center gap-2">
+                    <i class="fa-solid fa-microchip text-cyber-cyan"></i> Adaptive Self-Learning AI Engine
+                </h2>
+                <p class="text-xs text-gray-300 mb-4">Continuously self-optimizes layout arrangement and texture filtering based on user interactions.</p>
+                
+                <div class="bg-black/40 p-3 rounded-xl border border-white/5 mb-4">
+                    <div class="text-[10px] text-gray-400 font-mono">TOP SELF-LEARNED CLASSIFICATION</div>
+                    <div id="ai-top-tag" class="text-sm font-bold text-cyber-cyan mt-1">3D Exterior Render</div>
+                </div>
+
+                <div id="analytics-bars" class="space-y-3"></div>
+            </div>
+        </section>
+
+        <!-- STUDIO / CMS TAB -->
+        <section id="tab-editor" class="hidden space-y-6">
+            <div class="glass-panel rounded-2xl p-5">
+                <h2 class="font-orbitron font-bold text-base text-white mb-2 flex items-center gap-2">
+                    <i class="fa-solid fa-plus-circle text-cyber-cyan"></i> Add New Ultra HD Attachment
+                </h2>
+                <form id="add-attachment-form" onsubmit="handleFormSubmit(event)" class="space-y-4 text-xs">
+                    <div>
+                        <label class="block text-gray-300 mb-1 font-semibold">Target Window</label>
+                        <select id="form-window-id" class="w-full bg-black/60 border border-white/25 rounded-xl p-2.5 text-white focus:border-cyber-cyan focus:outline-none"></select>
+                    </div>
+                    <div>
+                        <label class="block text-gray-300 mb-1 font-semibold">Asset Title</label>
+                        <input type="text" id="form-title" required placeholder="e.g. Modern Skyscraper Design" class="w-full bg-black/60 border border-white/25 rounded-xl p-2.5 text-white focus:border-cyber-cyan focus:outline-none">
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-gray-300 mb-1 font-semibold">Type</label>
+                            <select id="form-type" class="w-full bg-black/60 border border-white/25 rounded-xl p-2.5 text-white focus:border-cyber-cyan focus:outline-none">
+                                <option value="image">Image / Render</option>
+                                <option value="video">Video</option>
+                                <option value="file">File</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-gray-300 mb-1 font-semibold">Classification Tag</label>
+                            <input type="text" id="form-tag" required placeholder="e.g. Structural Blueprint" class="w-full bg-black/60 border border-white/25 rounded-xl p-2.5 text-white focus:border-cyber-cyan focus:outline-none">
+                        </div>
+                    </div>
+                    <button type="submit" class="w-full py-3 rounded-xl bg-gradient-to-r from-cyber-cyan to-blue-600 text-cyber-dark font-orbitron font-extrabold text-xs tracking-wider shadow-lg">
+                        ADD ATTACHMENT (50 MAX)
+                    </button>
+                </form>
+            </div>
+
+            <div class="glass-panel rounded-2xl p-5 border border-dashed border-cyber-cyan/40">
+                <h3 class="font-orbitron font-bold text-sm text-white mb-2"><i class="fa-solid fa-square-plus text-cyber-cyan mr-1"></i> Create New Interface Window</h3>
+                <div class="flex gap-2">
+                    <input type="text" id="new-window-title" placeholder="e.g. Commercial Skyscrapers" class="flex-1 bg-black/60 border border-white/25 rounded-xl p-2.5 text-xs text-white focus:border-cyber-cyan focus:outline-none">
+                    <button onclick="createNewWindow()" class="px-4 py-2.5 rounded-xl bg-cyber-cyan text-cyber-dark font-bold text-xs">Create</button>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- BOTTOM NAV BAR -->
+    <nav class="fixed bottom-0 left-0 right-0 z-40 bg-cyber-dark/95 backdrop-blur-lg border-t border-cyber-cyan/30 py-2 px-6 flex justify-around items-center">
+        <button onclick="switchMainTab('portfolio')" class="flex flex-col items-center gap-1 text-cyber-cyan">
+            <i class="fa-solid fa-layer-group text-lg"></i>
+            <span class="text-[10px] font-orbitron font-bold">WINDOWS</span>
+        </button>
+        <button onclick="switchMainTab('learning')" class="flex flex-col items-center gap-1 text-gray-400 hover:text-white">
+            <i class="fa-solid fa-brain text-lg"></i>
+            <span class="text-[10px] font-orbitron font-bold">AI METRICS</span>
+        </button>
+        <button onclick="switchMainTab('editor')" class="flex flex-col items-center gap-1 text-gray-400 hover:text-white">
+            <i class="fa-solid fa-sliders text-lg"></i>
+            <span class="text-[10px] font-orbitron font-bold">STUDIO</span>
+        </button>
+    </nav>
+
+    <!-- APPLICATION SCRIPT WITH SELF-HEALING & 1000% ZOOM -->
+    <script>
+        const DEFAULT_DATA = [
+            {
+                id: 'win-1',
+                title: 'Building Designs & Renderings',
+                isPublic: true,
+                albums: [
+                    { id: 'alb-1', name: 'Exterior Facades', isPublic: true },
+                    { id: 'alb-2', name: 'Structural Plans', isPublic: false }
+                ],
+                activeAlbumId: 'alb-1',
+                attachments: [
+                    { id: 'att-1', albumId: 'alb-1', title: 'Parametric Cyber Tower', type: 'image', tag: '3D Exterior Render', views: 84 },
+                    { id: 'att-2', albumId: 'alb-1', title: 'Cantilever Framing Model', type: 'image', tag: 'Structural Concept', views: 56 },
+                    { id: 'att-3', albumId: 'alb-2', title: 'Foundation Blueprint', type: 'file', tag: 'Structural Blueprint', views: 29 }
+                ]
+            },
+            {
+                id: 'win-2',
+                title: 'Online Achievements & Awards',
+                isPublic: true,
+                albums: [
+                    { id: 'alb-3', name: 'Citations', isPublic: true }
+                ],
+                activeAlbumId: 'alb-3',
+                attachments: [
+                    { id: 'att-4', albumId: 'alb-3', title: 'Global Architecture Award 2026', type: 'image', tag: 'Award Citation', views: 120 }
+                ]
+            }
+        ];
+
+        let portfolioData = [];
+        try {
+            const saved = localStorage.getItem('cyberarch_portfolio_data');
+            portfolioData = saved ? JSON.parse(saved) : DEFAULT_DATA;
+            if (!Array.isArray(portfolioData) || portfolioData.length === 0) {
+                portfolioData = DEFAULT_DATA;
+            }
+        } catch (e) {
+            // Self-healing fallback recovery
+            portfolioData = DEFAULT_DATA;
+            localStorage.setItem('cyberarch_portfolio_data', JSON.stringify(DEFAULT_DATA));
+        }
+
+        let isEditMode = false;
+        let isCalibratedSpacing = true;
+        let currentZoomIndex = 1; // 1x to 10x (1000%)
+        const zoomLevels = [1, 1.5, 2, 3, 4, 6, 8, 10];
+
+        function adjustGlobalZoom(direction) {
+            currentZoomIndex = (currentZoomIndex + direction + zoomLevels.length) % zoomLevels.length;
+            const scale = zoomLevels[currentZoomIndex];
+            document.getElementById('zoom-level-badge').innerText = `Zoom: ${scale * 100}%`;
+            
+            document.querySelectorAll('.window-bg-card').forEach(card => {
+                card.style.transform = `scale(${scale})`;
+            });
+        }
+
+        function saveData() {
+            localStorage.setItem('cyberarch_portfolio_data', JSON.stringify(portfolioData));
+            renderPortfolioWindows();
+            renderAIAnalytics();
+            populateFormWindowsSelect();
+        }
+
+        function resetData() {
+            if (confirm("Reset interface back to default sample windows and self-heal configurations?")) {
+                portfolioData = DEFAULT_DATA;
+                saveData();
+            }
+        }
+
+        // Canvas Plexus Network Animation
+        const canvas = document.getElementById('plexus-canvas');
+        const ctx = canvas.getContext('2d');
+        let width, height, particles = [];
+
+        function resizeCanvas() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        class Particle {
+            constructor() {
+                this.x = Math.random() * width;
+                this.y = Math.random() * height;
+                this.vx = (Math.random() - 0.5) * 0.6;
+                this.vy = (Math.random() - 0.5) * 0.6;
+                this.radius = Math.random() * 1.5 + 1;
+            }
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                if (this.x < 0 || this.x > width) this.vx *= -1;
+                if (this.y < 0 || this.y > height) this.vy *= -1;
+            }
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = '#00ffcc';
+                ctx.fill();
+            }
+        }
+        for (let i = 0; i < 30; i++) particles.push(new Particle());
+
+        function animatePlexus() {
+            ctx.clearRect(0, 0, width, height);
+            for (let i = 0; i < particles.length; i++) {
+                particles[i].update();
+                particles[i].draw();
+                for (let j = i + 1; j < particles.length; j++) {
+                    const dx = particles[i].x - particles[j].x;
+                    const dy = particles[i].y - particles[j].y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    if (dist < 110) {
+                        ctx.beginPath();
+                        ctx.moveTo(particles[i].x, particles[i].y);
+                        ctx.lineTo(particles[j].x, particles[j].y);
+                        ctx.strokeStyle = `rgba(0, 255, 204, ${1 - dist / 110})`;
+                        ctx.lineWidth = 0.5;
+                        ctx.stroke();
+                    }
+                }
+            }
+            requestAnimationFrame(animatePlexus);
+        }
+        animatePlexus();
+
+        function renderPortfolioWindows() {
+            const container = document.getElementById('windows-list');
+            container.innerHTML = '';
+
+            portfolioData.forEach((win) => {
+                const card = document.createElement('div');
+                const gapClass = isCalibratedSpacing ? 'window-gap-calibrated' : 'window-gap-compact';
+                card.className = `window-bg-card rounded-3xl p-5 relative ${gapClass}`;
+                card.style.transform = `scale(${zoomLevels[currentZoomIndex]})`;
+
+                // Albums
+                let albumsHTML = (win.albums || []).map(album => `
+                    <div onclick="selectAlbum('${win.id}', '${album.id}')" class="flex items-center gap-2 px-3 py-1.5 rounded-xl border text-xs cursor-pointer transition-all ${album.id === win.activeAlbumId ? 'border-cyber-cyan bg-cyber-cyan/20 text-white font-bold' : 'border-white/15 bg-black/50 text-gray-300'}">
+                        <span>${album.name}</span>
+                        <span onclick="event.stopPropagation(); toggleAlbumPrivacy('${win.id}', '${album.id}')" class="text-[10px] px-1.5 py-0.5 rounded bg-black/60 border border-white/20 text-cyan-300">
+                            ${album.isPublic ? '🌐 Public' : '🔒 Private'}
+                        </span>
+                    </div>
+                `).join('');
+
+                const activeAtts = (win.attachments || []).filter(a => a.albumId === win.activeAlbumId);
+
+                let attachmentsHTML = activeAtts.map(att => `
+                    <div class="glass-panel rounded-2xl p-2.5 flex flex-col justify-between relative group">
+                        <div class="w-full h-24 bg-black/80 rounded-xl overflow-hidden relative mb-2 border border-cyber-cyan/30 flex flex-col items-center justify-center p-2 text-center">
+                            <i class="fa-solid ${att.type === 'video' ? 'fa-video' : att.type === 'file' ? 'fa-file-lines' : 'fa-building'} text-cyber-cyan text-xl mb-1"></i>
+                            <span class="text-[9px] text-gray-300 font-mono line-clamp-1">${att.title}</span>
+                            ${isEditMode ? `<button onclick="deleteAttachment('${win.id}', '${att.id}')" class="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-cyber-accent text-white flex items-center justify-center text-xs"><i class="fa-solid fa-trash text-[10px]"></i></button>` : ''}
+                        </div>
+                        <div>
+                            <h3 class="text-xs font-bold text-white truncate mb-1">${att.title}</h3>
+                            <input type="text" value="${att.tag}" onchange="updateTag('${win.id}', '${att.id}', this.value)" class="w-full bg-black/60 border border-white/20 rounded px-1.5 py-0.5 text-[10px] text-cyber-cyan font-mono focus:outline-none">
+                        </div>
+                    </div>
+                `).join('');
+
+                card.innerHTML = `
+                    <div class="flex items-center justify-between mb-3 pb-2 border-b border-white/15">
+                        <div>
+                            <input type="text" value="${win.title}" onchange="updateWindowTitle('${win.id}', this.value)" class="font-orbitron font-bold text-sm bg-transparent text-white border-b border-transparent focus:border-cyber-cyan focus:outline-none">
+                            <div class="text-[10px] text-cyan-300 font-mono mt-0.5">Capacity: ${activeAtts.length} / 50 Items</div>
+                        </div>
+                        <button onclick="toggleWindowPrivacy('${win.id}')" class="px-2.5 py-1 rounded-full text-[10px] font-bold border ${win.isPublic ? 'border-cyber-cyan/50 bg-cyber-cyan/20 text-cyber-cyan' : 'border-cyber-accent/50 bg-cyber-accent/20 text-red-300'}">
+                            ${win.isPublic ? '🌐 Public Window' : '🔒 Private Window'}
+                        </button>
+                    </div>
+
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-[10px] font-orbitron font-semibold text-gray-300 uppercase">Albums</span>
+                        <button onclick="addAlbum('${win.id}')" class="text-[10px] text-cyber-cyan hover:underline">+ Add Album</button>
+                    </div>
+                    <div class="flex gap-2 overflow-x-auto pb-2 mb-3">
+                        ${albumsHTML}
+                    </div>
+
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-[10px] font-orbitron font-semibold text-gray-300 uppercase">Attachments</span>
+                        <span class="text-[10px] text-gray-400">50 Max</span>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3 max-h-[460px] overflow-y-auto pr-1">
+                        ${attachmentsHTML || '<div class="col-span-2 py-6 text-center text-xs text-gray-400">No attachments in this album yet.</div>'}
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function toggleWindowPrivacy(winId) {
+            const win = portfolioData.find(w => w.id === winId);
+            if (win) { win.isPublic = !win.isPublic; saveData(); }
+        }
+
+        function toggleAlbumPrivacy(winId, albumId) {
+            const win = portfolioData.find(w => w.id === winId);
+            if (win) {
+                const alb = win.albums.find(a => a.id === albumId);
+                if (alb) { alb.isPublic = !alb.isPublic; saveData(); }
+            }
+        }
+
+        function selectAlbum(winId, albumId) {
+            const win = portfolioData.find(w => w.id === winId);
+            if (win) { win.activeAlbumId = albumId; saveData(); }
+        }
+
+        function addAlbum(winId) {
+            const name = prompt("Enter new album name:");
+            if (name) {
+                const win = portfolioData.find(w => w.id === winId);
+                if (win) {
+                    const newId = 'alb-' + Date.now
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Cyber Arch | Ultra HD Portfolio System</title>
