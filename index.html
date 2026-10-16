@@ -304,6 +304,328 @@
     }
 
     function triggerUpload(windowName) {
+      alert(`Opening secure Ultra HD upload module for: ${windowName} (Limit: 50 items)`);
+    }
+
+    // Search / Title filter to instantly trigger pop-up or filter cards
+    document.getElementById('projectSearch').addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        const query = this.value.trim();
+        if (query) {
+          openModal(query, `Dedicated landing page generated dynamically via self-learning AI index for search query: "${query}".`);
+        }
+      }
+    });
+  </script>
+</body>
+</html>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cyber Arch | Ultra HD Portfolio System</title>
+  <style>
+    :root {
+      --bg-dark: #0a0f18;
+      --panel-bg: rgba(10, 25, 35, 0.75);
+      --neon-cyan: #00ffcc;
+      --neon-blue: #0099ff;
+      --text-main: #e0f0ff;
+      --border-color: rgba(0, 255, 204, 0.3);
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      font-family: 'Segoe UI', Roboto, Helvetica, sans-serif;
+      margin: 0;
+      padding: 0;
+      overflow-x: hidden;
+    }
+
+    /* Cybernetic Plexus Background Canvas */
+    #bg-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: -1;
+      background: radial-gradient(circle at center, #051923 0%, #000408 100%);
+    }
+
+    /* Main Container */
+    .cyber-container {
+      max-width: 1200px;
+      margin: 40px auto;
+      padding: 20px;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Header Status Bar */
+    .cyber-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--panel-bg);
+      border: 1px solid var(--border-color);
+      padding: 15px 25px;
+      border-radius: 12px;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 0 20px rgba(0, 255, 204, 0.15);
+    }
+
+    .system-status {
+      display: flex;
+      gap: 15px;
+      font-size: 0.85rem;
+      color: var(--neon-cyan);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    /* Search Bar / Title Input */
+    .search-section {
+      margin: 30px 0;
+      text-align: center;
+    }
+
+    .search-input {
+      width: 100%;
+      max-width: 600px;
+      padding: 14px 20px;
+      background: rgba(0, 0, 0, 0.6);
+      border: 1px solid var(--neon-cyan);
+      border-radius: 30px;
+      color: #fff;
+      font-size: 1rem;
+      outline: none;
+      box-shadow: 0 0 15px rgba(0, 255, 204, 0.2);
+      transition: all 0.3s ease;
+    }
+
+    .search-input:focus {
+      box-shadow: 0 0 25px rgba(0, 255, 204, 0.5);
+    }
+
+    /* Project Window Card */
+    .window-card {
+      background: var(--panel-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+      backdrop-filter: blur(8px);
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .window-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 0 25px rgba(0, 255, 204, 0.3);
+      border-color: var(--neon-cyan);
+    }
+
+    .window-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      padding-bottom: 10px;
+      margin-bottom: 15px;
+    }
+
+    .upload-btn {
+      background: transparent;
+      border: 1px solid var(--neon-cyan);
+      color: var(--neon-cyan);
+      padding: 6px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.8rem;
+      transition: background 0.2s;
+    }
+
+    .upload-btn:hover {
+      background: var(--neon-cyan);
+      color: #000;
+    }
+
+    /* Modal Landing Page Pop-up */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(2, 6, 12, 0.85);
+      backdrop-filter: blur(15px);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal-content {
+      background: rgba(10, 25, 35, 0.95);
+      border: 2px solid var(--neon-cyan);
+      border-radius: 16px;
+      width: 90%;
+      max-width: 900px;
+      max-height: 85vh;
+      overflow-y: auto;
+      padding: 35px;
+      box-shadow: 0 0 40px rgba(0, 255, 204, 0.4);
+      position: relative;
+      transform: scale(0.95);
+      transition: transform 0.3s ease;
+    }
+
+    .modal-overlay.active .modal-content {
+      transform: scale(1);
+    }
+
+    .close-modal {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: none;
+      border: none;
+      color: var(--neon-cyan);
+      font-size: 1.5rem;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Cybernetic Plexus Background Canvas -->
+  <canvas id="bg-canvas"></canvas>
+
+  <div class="cyber-container">
+    <!-- Header -->
+    <header class="cyber-header">
+      <div>
+        <h2>CYBER ARCH</h2>
+        <small>Ultra HD Portfolio System</small>
+      </div>
+      <div class="system-status">
+        <span>⚡ Self-Adjusting</span>
+        <span>🧠 Self-Learning Active</span>
+        <span>🔧 Self-Fixing Online</span>
+      </div>
+    </header>
+
+    <!-- Search / Title Trigger Bar -->
+    <div class="search-section">
+      <input type="text" id="projectSearch" class="search-input" placeholder="Type project title to launch landing page (e.g., Wholistic Hospitel)...">
+    </div>
+
+    <!-- Window Cards Container -->
+    <div id="windowContainer">
+      <!-- Example Window Card 1 -->
+      <div class="window-card" onclick="openModal('Wholistic Hospitel', 'Set A, B, & C integrated hybrid medical facility with penthouse, dual helipads, and advanced MEP engineering.')">
+        <div class="window-header">
+          <h3>Wholistic Hospitel (Set A, B, C)</h3>
+          <button class="upload-btn" onclick="event.stopPropagation(); triggerUpload('Wholistic Hospitel')">📁 Upload (50 Max)</button>
+        </div>
+        <p>State-of-the-art hybrid hospital and hotel complex with 10,000m² floor area and ultra-HD architectural renders.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Dynamic Landing Page Pop-up Modal -->
+  <div id="projectModal" class="modal-overlay">
+    <div class="modal-content">
+      <button class="close-modal" onclick="closeModal()">&times;</button>
+      <h1 id="modalTitle">Project Title</h1>
+      <hr style="border-color: var(--border-color); margin: 20px 0;">
+      <div id="modalBody">
+        <!-- Dynamic content goes here -->
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // --- Plexus Background Animation ---
+    const canvas = document.getElementById('bg-canvas');
+    const ctx = canvas.getContext('2d');
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    const particles = Array.from({ length: 70 }, () => ({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      vx: (Math.random() - 0.5) * 0.8,
+      vy: (Math.random() - 0.5) * 0.8,
+      radius: Math.random() * 2 + 1
+    }));
+
+    function animatePlexus() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = 'rgba(0, 255, 204, 0.5)';
+      ctx.strokeStyle = 'rgba(0, 255, 204, 0.12)';
+
+      particles.forEach((p, index) => {
+        p.x += p.vx;
+        p.y += p.vy;
+
+        if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
+        if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
+
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+        ctx.fill();
+
+        for (let j = index + 1; j < particles.length; j++) {
+          const p2 = particles[j];
+          const dist = Math.hypot(p.x - p2.x, p.y - p2.y);
+          if (dist < 130) {
+            ctx.beginPath();
+            ctx.moveTo(p.x, p.y);
+            ctx.lineTo(p2.x, p2.y);
+            ctx.stroke();
+          }
+        }
+      });
+      requestAnimationFrame(animatePlexus);
+    }
+    animatePlexus();
+
+    // --- Modal Landing Page Logic ---
+    function openModal(title, description) {
+      document.getElementById('modalTitle').innerText = title;
+      document.getElementById('modalBody').innerHTML = `
+        <p style="font-size: 1.1rem; line-height: 1.6;">${description}</p>
+        <div style="margin-top: 25px; padding: 20px; background: rgba(0,0,0,0.4); border-radius: 8px; border: 1px dashed var(--neon-cyan);">
+          <h4>Hyperrealism Ultra HD Viewport</h4>
+          <p style="color: #88c0d0; font-size: 0.9rem;">Interactive 3D structural layers, self-adjusting parameters, and direct file management active.</p>
+        </div>
+      `;
+      document.getElementById('projectModal').classList.add('active');
+    }
+
+    function closeModal() {
+      document.getElementById('projectModal').classList.remove('active');
+    }
+
+    function triggerUpload(windowName) {
       alert(`Opening secure Ultra HD upload module for: ${windowName} (Limit: 5000 items)`);
     }
 
